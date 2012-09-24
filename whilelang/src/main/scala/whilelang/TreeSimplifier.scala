@@ -1,14 +1,13 @@
 package whilelang
 
-/*object TreeSimplifier {
-  def apply(stat: Statement): Statement = {
-    // Replace all for loops by equivalent trees using while loops...
-    println("Tree simplification is not implemented.")
-    stat
-  }
-}*/
-
+/*
+ * TreeSimplifier will go through the tree of Statements and replace
+ * all for-loops by while-loops
+ */
 object TreeSimplifier {
+  /*
+   * Search for for-loops inside a block
+   */
   def replaceForLoop(body: List[Statement]): List[Statement] = {
     for {
       statB <- body
@@ -19,6 +18,9 @@ object TreeSimplifier {
     } yield n
   }
   
+  /*
+   * Scan inside blocks, if-else-statements and while-loops for for-loops
+   */
   def apply(stat: Statement): Statement = {
     stat match {
       case IfThenElse(expr, then, elze) => new IfThenElse(expr, this(then), this(elze))
