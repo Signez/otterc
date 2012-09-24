@@ -11,12 +11,13 @@ class Interpreter {
   /**
    * Run the interpreter. 
    * 
-   * This method is simple, as its only purpose is to print a start
-   * and end message before and after an actual evaluation of the statement.
+   * This method is simple, as its only purpose is to reset its variables and to
+   * print start/end messages before and after an actual evaluation of the statement.
    */
   def run(stat: Statement): Unit = {
     println("debug: Interpreter started.")
     
+    registry.clear() // Clear all variables (useful when this interpreter is used multiple times)
     eval(stat)
     
     println("debug: Interpreter ended.")
