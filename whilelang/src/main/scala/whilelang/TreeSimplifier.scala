@@ -12,7 +12,6 @@ object TreeSimplifier {
   def replaceForLoop(body: List[Statement]): List[Statement] = {
     for {
       statB <- body
-      //n = statB
       n = statB match {
         case For(init, expr, step, body) => new Block(List(init, new While(expr, new Block(List(this(body), step)) )));
         case _ => this(statB);
