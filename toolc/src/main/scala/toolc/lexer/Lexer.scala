@@ -19,10 +19,28 @@ trait Lexer {
     // error on them and check the output).
   // 
   // Write as many helper functions as you need.
+  
+  val keywordMap = Map[String, Token](
+     "(" -> Token(OPAREN),
+     ")" -> Token(CPAREN),
+     "if" -> Token(IF),
+     "else" -> Token(ELSE),
+     "extends" -> Token(EXTENDS)
+  );
+  
+  /*def mapKeyword(leftKeyword: Map[String, Token], buffer: String): Token = {
+    var currentBuffer = buffer + source.ch;
+    for(keyword: String, token: Token <- leftKeyword if keyword.startsWith(currentBuffer)) {
+      
+    }
+  }*/
 
   /** Works like an iterator, and returns the next token from the input stream. */
   def nextToken: Token = {
-    // ... 
+    source.ch match {
+      case '(' => Token(OPAREN);
+      case ')' => Token(CPAREN);
+    }
     Token(EOF)
   }
 }
