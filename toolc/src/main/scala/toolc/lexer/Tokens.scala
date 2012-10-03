@@ -33,18 +33,18 @@ object Tokens {
   case object AND extends TokenInfo with TokenClass 			// &&
   case object OR extends TokenInfo with TokenClass				// ||
   case object EQUALS extends TokenInfo with TokenClass			// ==
-  case object LESSERTHAN extends TokenInfo with TokenClass		// <
+  case object LESS extends TokenInfo with TokenClass		    // <
   case object PLUS extends TokenInfo with TokenClass			// +
   case object MINUS extends TokenInfo with TokenClass			// -
-  case object TIMES extends TokenInfo with TokenClass			// *
-  case object SLASH extends TokenInfo with TokenClass			// /
+  case object MUL extends TokenInfo with TokenClass				// *
+  case object DIV extends TokenInfo with TokenClass				// /
   case object LENGTH extends TokenInfo with TokenClass			// .length
-  case object LBRACKET extends TokenInfo with TokenClass 		// [
-  case object RBRACKET extends TokenInfo with TokenClass 		// ]
-  case object LPAREN extends TokenInfo with TokenClass 		    // (
-  case object RPAREN extends TokenInfo with TokenClass 		    // )
-  case object LBLOCK extends TokenInfo with TokenClass 		    // {
-  case object RBLOCK extends TokenInfo with TokenClass 		    // }
+  case object OBRACKET extends TokenInfo with TokenClass 		// [
+  case object CBRACKET extends TokenInfo with TokenClass 		// ]
+  case object OPAREN extends TokenInfo with TokenClass 		    // (
+  case object CPAREN extends TokenInfo with TokenClass 		    // )
+  case object OBLOCK extends TokenInfo with TokenClass 		    // {
+  case object CBLOCK extends TokenInfo with TokenClass 		    // }
   case object TRUE extends TokenInfo with TokenClass 		    // true
   case object FALSE extends TokenInfo with TokenClass 		    // false
   case object THIS extends TokenInfo with TokenClass 		    // this
@@ -67,11 +67,13 @@ object Tokens {
     def tokenClass: TokenClass = IDCLASS
   }
 
+  // Integer literals
   case class INTEGERLITERAL(value: Int) extends TokenInfo {
     override def toString: String = "INTEGER_LITTERAL=" + value
     def tokenClass: TokenClass = INTEGERLITERALCLASS
   }
 
+  // String literals
   case class STRINGLITERAL(value: String) extends TokenInfo {
     override def toString: String = "STRING_LITTERAL=" + value
     def tokenClass: TokenClass = STRINGLITERALCLASS
@@ -82,10 +84,12 @@ object Tokens {
     override def toString: String = "identifier"
   }
   
+  // Token class for integer
   case object INTEGERLITERALCLASS extends TokenClass {
     override def toString: String = "integer litteral"
   }
   
+  // Token 
   case object STRINGLITERALCLASS extends TokenClass {
     override def toString: String = "string litteral"
   }
