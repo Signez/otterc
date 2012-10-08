@@ -1,0 +1,65 @@
+/*
+Programmed by group 47
+*/
+object TestTrue {
+	def main() : Unit = {
+		println(new Test().findTrue());
+	}
+}
+
+class Test {
+	def findTrue() : Int = {
+		//Some boolean variables : those frome the expression
+		var a: Bool;
+		var b: Bool;
+		var c: Bool;
+		var d: Bool;/*
+			4 variables seamed nor too much, neither too few ! (?)-
+		*/
+		
+		//The Int variables for the while loops
+		var i : Int;
+		var j : Int;
+		var k : Int;
+		var l : Int;
+		
+		println("The expression (a && b) ^ !(c && !d) = /true/ when : ");
+		a = true;
+		b = true;
+		c = true;
+		d = true;
+		
+		/*
+			While loops because no for loops in tool
+		*/
+		l = 0;
+		while(l < 2){
+			k = 0;
+			while(k < 2){
+				j = 0;
+				while(j < 2){
+					i = 0;
+					while(i < 2){
+						if ((a && b) || !(c && !d)) {
+							println(a);
+							println(b);
+							println(c);
+							println(d);
+							println("--------"); //to separate the solutions
+						}
+						i = i + 1;
+						d = !d;
+					}
+					j = j + 1;
+					c  = !c;
+				}
+				k = k + 1;
+				b = !b;
+			}
+		l = l + 1;
+		a = !a;
+		}
+		return 0;//to have something printed
+	}
+	
+}
