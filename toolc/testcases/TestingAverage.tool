@@ -1,0 +1,54 @@
+object TestingAverage {
+    def main() : Unit = { 
+        println(new Sort().init().calculateAverage(3));      
+    }
+}
+ 
+class Sort {
+	var numbers : Int[] ;
+    def calculateAverage(nbDecimals:Int) : String = {
+
+		var somme:Int;
+		var i:Int;
+		var decimal:Int;
+		var entier:Int;
+		somme=0;
+		i=0;
+		while(i<numbers.length)
+			{
+				somme = somme+numbers[i];
+				i=i+1;
+			}
+		entier=somme/numbers.length;
+		decimal=somme*this.pow(10,nbDecimals)/numbers.length - entier*this.pow(10,nbDecimals);
+		println("-------------------------");
+		return "Moyenne de l'array= "+entier+"."+decimal+"";
+    }
+	def pow(base:Int, exp:Int):Int =
+		{
+			var output:Int;
+			var i:Int;
+			output=1;
+			i=0;
+			while(i<exp)
+			{
+				output=output*base;
+				i=i+1;
+			}
+			return output;
+		}
+    def init() : Sort = {	
+	numbers = new Int[10];
+	numbers[0] = 20 ;
+	numbers[1] = 7  ; 
+	numbers[2] = 12 ;
+	numbers[3] = 18 ;
+	numbers[4] = 2  ; 
+	numbers[5] = 11 ;
+	numbers[6] = 6  ; 
+	numbers[7] = 9  ; 
+	numbers[8] = 19 ; 
+	numbers[9] = 5  ;
+	return this;
+    }
+}
