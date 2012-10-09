@@ -38,13 +38,6 @@ trait Lexer {
      "return" -> Token(RETURN)
   );
   
-  /*def mapKeyword(leftKeyword: Map[String, Token], buffer: String): Token = {
-    var currentBuffer = buffer + source.ch;
-    for(keyword: String, token: Token <- leftKeyword if keyword.startsWith(currentBuffer)) {
-      
-    }
-  }*/
-  
   /**
    * Read an identifier from the source, consuming the stream until neither 
    * a letter nor a digit shows up. 
