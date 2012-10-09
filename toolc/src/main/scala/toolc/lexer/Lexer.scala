@@ -123,13 +123,21 @@ trait Lexer {
     
     // STRINGS LITTERALS ==================================
     if(source.ch == '"') {
+      // We found the first double-quote : saving the position...
       pos = source.pos;
       source.next();
+      
+      // ...then reading all the text that follows, until the next double-quote
       var text = readEverythingUntil('"');
+      
       if(source.ch == '"') {
-        source.next();
+        source.next(); // Consuming the final double-quote
+        
         return Token(STRINGLITERAL(text)).setPos(pos);
       } else {
+        // Reached end-of-file : this is wrong!
+        isEOF = true;
+        println(" - Unexpected EOF, expecting double-quote after that position");
         return Token(BAD).setPos(pos);
       }
     }
@@ -137,16 +145,19 @@ trait Lexer {
     // INTEGER LITTERALS ==================================
     if(source.ch >= '0' && source.ch <= '9') {
       if(source.ch == '0') {
+        // Started with zero ? It has to be a null integer
+        // (no leading zeros accepted in Tool)
         source.next();
         return Token(INTEGERLITERAL(0)).setPos(source.pos);
       } else {
-        pos = source.pos;
+        // It's a regular integer, let's read it
+        pos = source.pos; // Saving starting digit position
         var integer = readInteger();
         return Token(INTEGERLITERAL(integer)).setPos(pos);
       }
     }
     
-    // OTHER (SIMPLE) TOKENS ==============================
+    // OTHER TOKENS =======================================
     
     pos = source.pos;
     
@@ -166,6 +177,7 @@ trait Lexer {
       case '.' => Token(DOT)
       case '!' => Token(BANG)
       case '<' => Token(LESS)
+      
       case '&' => {
         source.next()
         if(source.ch == '&') {
@@ -176,6 +188,7 @@ trait Lexer {
           return Token(BAD).setPos(source.pos);
         }
       }
+      
       case '|' => {
         source.next()
         if(source.ch == '|') {
@@ -186,6 +199,7 @@ trait Lexer {
           return Token(BAD).setPos(source.pos);
         }
       }
+      
       case '=' => {
         source.next()
         if(source.ch == '=') {
@@ -197,6 +211,7 @@ trait Lexer {
           return Token(ASSIGN).setPos(pos);
         }
       }
+      
       case '/' => {
 	    source.next()
 	  
@@ -212,7 +227,7 @@ trait Lexer {
 			      source.next();
 			    
 			    if(!source.hasNext) {
-			      println("\n - Unexpected EOF, expecting \"/*\"");
+			      println("\n - Unexpected EOF, expecting \"*/\"");
 			      return Token(BAD).setPos(source.pos);
 			    }
 	    	}
@@ -224,6 +239,7 @@ trait Lexer {
         	return Token(DIV).setPos(source.pos - 1);
         }
 	  }
+      
       case _ => {
         if(!source.hasNext && source.ch.isWhitespace) {
     	  // Handling edge case, when the last character is a whitespace
