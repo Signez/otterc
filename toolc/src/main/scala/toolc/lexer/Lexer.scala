@@ -87,17 +87,21 @@ trait Lexer {
     while(source.ch.isWhitespace) source.next();
     
     // COMMENTS ===========================================
-    // Trimming comments
+    // Trimming comments, or returning DIV
     if(source.ch == '/') {
 	    source.next()
 	  
 	    if(source.ch == '/') {
 		    while(source.ch != -1 && source.ch != '\n') 
 		      source.next();
+        } else {
+        	return Token(DIV);
         }
     }
     
     // EOF ================================================
+    // If we are at end of file, let's stop right know 
+    // the process
     if(source.ch == -1) {
       return Token(EOF)
     }
@@ -124,6 +128,7 @@ trait Lexer {
     // INTEGER LITTERALS ==================================
     if(source.ch >= '0' && source.ch <= '9') {
       if(source.ch == '0') {
+        source.next();
         return Token(INTEGERLITERAL(0));
       } else {
         var integer = readInteger();
@@ -141,7 +146,6 @@ trait Lexer {
       case ']' => Token(CBRACKET)
       case '{' => Token(OBLOCK)
       case '}' => Token(CBLOCK)
-      case '/' => Token(DIV)
       case '+' => Token(PLUS)
       case '-' => Token(MINUS)
       case '*' => Token(MUL)
