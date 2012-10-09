@@ -12,8 +12,17 @@ trait Lexer {
   import Tokens._
   
   /**
+   * End of File: this boolean is true when we are not enable to go to
+   * the next character (because the streams ends).
+   */
+  var isEOF = false;
+  
+  /**
    * Contains all keywords, i.e. special identifiers that are reserved
    * and used as part of the language.
+   * 
+   * Note that doesn't contain any "primitive" types as they are NOT 
+   * keywords but special type identifiers handled in the Parser layer.
    */
   val keywordMap = Map[String, Token](
      "if" -> Token(IF),
@@ -94,10 +103,13 @@ trait Lexer {
     trimWhitespaces();
     
     // EOF ================================================
-    // If we are at end of file, let's stop right know 
-    // the process
-    if(!source.hasNext) {
+    // If we are at end of file, let's return EOF
+    if(isEOF) {
       return Token(EOF).setPos(source.pos)
+    } else if(!source.hasNext) {
+      // The last character was not consumed.
+      // Let's flag this as the last loop
+      isEOF = true;
     }
     
     // IDENTIFIERS & KEYWORDS =============================
@@ -213,13 +225,25 @@ trait Lexer {
         }
 	  }
       case _ => {
-        println("\n - Unexpected character : " + source.ch + " (" + source.ch.asDigit + ")");
-        Token(BAD); // Unexpected character ? BAD
+        if(!source.hasNext && source.ch.isWhitespace) {
+    	  // Handling edge case, when the last character is a whitespace
+          // that wasn't dropped (we never drop the last char)
+          
+          Token(EOF);
+        } else {
+          // An unexpected character appears. Let's print an error message
+          
+          println("\n - Unexpected character : " + source.ch + " (" + source.ch.asDigit + ")");
+          Token(BAD);
+        }
       }
     }
     
-    if(source.hasNext)
+    if(source.hasNext) {
     	source.next();
+    } else {
+    	isEOF = true;
+    }
     
     token.setPos(pos);
     
