@@ -113,7 +113,7 @@ trait Lexer {
     }
     
     // IDENTIFIERS & KEYWORDS =============================
-    // All identifiers and keywords starts with integers
+    // All identifiers and keywords starts with letters
     if(source.ch.isLetter) {
       pos = source.pos;
       var sourceString = readIdentifier();
