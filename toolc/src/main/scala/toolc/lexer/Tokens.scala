@@ -38,7 +38,7 @@ object Tokens {
   case object MINUS extends TokenInfo with TokenClass			// -
   case object MUL extends TokenInfo with TokenClass				// *
   case object DIV extends TokenInfo with TokenClass				// /
-  case object LENGTH extends TokenInfo with TokenClass			// .length
+  case object LENGTH extends TokenInfo with TokenClass			// length
   case object OBRACKET extends TokenInfo with TokenClass 		// [
   case object CBRACKET extends TokenInfo with TokenClass 		// ]
   case object OPAREN extends TokenInfo with TokenClass 		    // (
