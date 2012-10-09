@@ -2,27 +2,20 @@ package toolc
 
 import scala.io.Source
 
-import parser.Parser
+import lexer.Lexer
 
-class Compiler(val fileName: String) extends Reporter with Parser {
+class Compiler(val fileName: String) extends Reporter with Lexer {
   import lexer.Tokens._
 
-  val source: Source = Source.fromFile(fileName).withPositioning(true)
+  val source: Source = Source.fromFile(fileName)
 
   def compile: Unit = {
-    import parser.Trees._
+    var t: Token = Token(BAD)
+      do {
+      t = nextToken
+      print(t.info + "(" + t.posString + ") ")
+    } while(t.info != EOF)
 
-    // Parsing
-    var parsedTree: Option[Tree] = None
-    parsedTree = Some(parseSource)
     terminateIfErrors
-
-    val mainProg: Program = parsedTree match {
-      case Some(p: Program) => p
-      case _ => sys.error("Main program expected from parser.")
-    }
-
-    // pretty printing:
-    println(TreePrinter(mainProg))
-  }
+  }  
 }
