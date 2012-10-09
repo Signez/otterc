@@ -4,22 +4,17 @@ package lexer
 import scala.io.Source
 
 trait Lexer {
-  // This indicates to the Scala compiler that this trait will be composed with
-  // a Compiler. This implies that the methods from the Reporter class will be
-  // available at run-time, as well as the reference to the Source object.
+  // This trait will be composed with a Compiler. 
+  // Implies that the methods from the Reporter class will be available at run-time, 
+  // as well as the reference to the Source object.
   self: Compiler =>
 
   import Tokens._
-
-  // You have access to the variable source defined in Compiler.scala, of the type
-  // scala.io.Source in here. You need to use it as your character stream for the
-  // file you are reading. You can use source.hasNext and source.next to read
-  // characters, and source.pos to access the positions. Make sure all the tokens
-  // you create have the proper position (you can always test that by calling an 
-    // error on them and check the output).
-  // 
-  // Write as many helper functions as you need.
   
+  /**
+   * Contains all keywords, i.e. special identifiers that are reserved
+   * and used as part of the language.
+   */
   val keywordMap = Map[String, Token](
      "if" -> Token(IF),
      "else" -> Token(ELSE),
@@ -35,7 +30,8 @@ trait Lexer {
      "var" -> Token(VAR),
      "class" -> Token(CLASS),
      "extends" -> Token(EXTENDS),
-     "return" -> Token(RETURN)
+     "return" -> Token(RETURN),
+     "object" -> Token(OBJECT)
   );
   
   /**
@@ -44,7 +40,7 @@ trait Lexer {
    */
   def readIdentifier(): String = {
     var buffer = "";
-    while(source.ch.isLetterOrDigit) {
+    while(source.ch.isLetterOrDigit || source.ch == '_') {
       buffer += source.ch;
       source.next();
     }
@@ -75,16 +71,18 @@ trait Lexer {
     }
     return buffer;
   }
-
-  /** 
-   * Works like an iterator, and returns the next token from the input stream. 
+  
+  /**
+   * Read the stream to find a new token.
    */
-  def nextToken: Token = {
+  def readToken(): Token = {
     var token = Token(BAD);
+    
+    if(source.pos == 0 && source.hasNext) source.next();
     
     // WHITESPACES ========================================
     // Trimming whitespaces
-    while(source.ch.isWhitespace) source.next();
+    while(source.ch.isWhitespace && source.hasNext) source.next();
     
     // COMMENTS ===========================================
     // Trimming comments, or returning DIV
@@ -92,8 +90,11 @@ trait Lexer {
 	    source.next()
 	  
 	    if(source.ch == '/') {
-		    while(source.ch != -1 && source.ch != '\n') 
+	    	// Trimming content of the comments until the new line
+		    while(source.hasNext && source.ch != '\n') 
 		      source.next();
+		    
+		    return readToken();
         } else {
         	return Token(DIV);
         }
@@ -102,7 +103,7 @@ trait Lexer {
     // EOF ================================================
     // If we are at end of file, let's stop right know 
     // the process
-    if(source.ch == -1) {
+    if(!source.hasNext) {
       return Token(EOF)
     }
     
@@ -116,6 +117,7 @@ trait Lexer {
     
     // STRINGS LITTERALS ==================================
     if(source.ch == '"') {
+      source.next();
       var text = readEverythingUntil('"');
       if(source.ch == '"') {
         source.next();
@@ -168,8 +170,9 @@ trait Lexer {
         source.next()
         if(source.ch == '|') {
           Token(OR);
-        } else {
-          Token(BAD);
+        } else {          
+          // Returning immediately, to not consume a character (readaheading)
+          return Token(BAD);
         }
       }
       case '=' => {
@@ -182,12 +185,27 @@ trait Lexer {
         }
       }
       case _ => {
+        println("\n - Unexpected character : " + source.ch + " (" + source.ch.asDigit + ")");
         Token(BAD); // Unexpected character ? BAD
       }
     }
     
-    source.next();
+    if(source.hasNext)
+    	source.next();
     
     return token
+  }
+
+  /** 
+   * Works like an iterator, and returns the next token from the input stream. 
+   */
+  def nextToken: Token = {
+    val previously: Int = source.pos;
+    val token: Token = readToken();
+    
+    // Fixing position (first next)
+    if(source.pos == 0) source.next()
+    
+    return token.setPos(previously);
   }
 }

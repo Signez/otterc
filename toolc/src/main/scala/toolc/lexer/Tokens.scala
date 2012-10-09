@@ -60,6 +60,7 @@ object Tokens {
   case object CLASS extends TokenInfo with TokenClass			// class
   case object EXTENDS extends TokenInfo with TokenClass			// extends
   case object RETURN extends TokenInfo with TokenClass			// return
+  case object OBJECT extends TokenInfo with TokenClass			// object
 
   // Identifiers
   case class ID(value: String) extends TokenInfo {
