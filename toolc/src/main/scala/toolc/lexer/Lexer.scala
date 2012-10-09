@@ -81,39 +81,6 @@ trait Lexer {
   }
   
   /**
-   * Trim comments.
-   * 
-   * Return a token if we encountered a operator when trying to readahead for comments.
-   */
-  def trimComments(): Option[Token] = {
-    if(source.ch == '/') {
-	    source.next()
-	  
-	    if(source.ch == '/') {
-	    	// Trimming content of the comments until the new line
-		    while(source.hasNext && source.ch != '\n') 
-		      source.next();
-		    
-		    if(source.hasNext) source.next(); // Consume the \n
-		    
-		    return None;
-        } else if(source.ch == '*') {
-            // Trimming content of the comments until */
-		    while(source.hasNext && !(source.ch == '*' && source.next() == '/')) 
-		      source.next();
-		    
-		    if(source.hasNext) source.next(); // Consume the last / (from */)
-		    
-		    return None;
-        } else {
-        	return Some(Token(DIV).setPos(source.pos - 1));
-        }
-    } else {
-      return None;
-    }
-  }
-  
-  /**
    * Read the stream to find a new token.
    */
   def readToken(): Token = {
@@ -124,14 +91,6 @@ trait Lexer {
     
     // WHITESPACES ========================================
     // Trimming whitespaces
-    trimWhitespaces();
-    
-    // COMMENTS ===========================================
-    // Trimming comments, or returning DIV
-    var maybeToken = trimComments();
-    if(maybeToken == Some) return maybeToken.get;
-    
-    // Trim whitespaces again, if there are after comments
     trimWhitespaces();
     
     // EOF ================================================
@@ -226,6 +185,33 @@ trait Lexer {
           return Token(ASSIGN).setPos(pos);
         }
       }
+      case '/' => {
+	    source.next()
+	  
+	    if(source.ch == '/' || source.ch == '*') {
+	      	// Handling 
+	    	if(source.ch == '/') {
+		    	// Trimming content of the comments until the new line
+			    while(source.hasNext && source.ch != '\n') 
+			      source.next();	    	  
+	    	} else {
+	    	    // Trimming content of the comments until */
+			    while(source.hasNext && !(source.ch == '*' && source.next() == '/')) 
+			      source.next();
+			    
+			    if(!source.hasNext) {
+			      println("\n - Unexpected EOF, expecting \"/*\"");
+			      return Token(BAD).setPos(source.pos);
+			    }
+	    	}
+		    
+		    if(source.hasNext) source.next(); // Consume the \n or / (in */)
+		    
+		    readToken(); // Find another token
+        } else {
+        	return Token(DIV).setPos(source.pos - 1);
+        }
+	  }
       case _ => {
         println("\n - Unexpected character : " + source.ch + " (" + source.ch.asDigit + ")");
         Token(BAD); // Unexpected character ? BAD
