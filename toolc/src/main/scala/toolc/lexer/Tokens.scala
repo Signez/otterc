@@ -64,19 +64,19 @@ object Tokens {
 
   // Identifiers
   case class ID(value: String) extends TokenInfo {
-    override def toString: String = "ID="+value
+    override def toString: String = "ID('" + value + "')"
     def tokenClass: TokenClass = IDCLASS
   }
 
   // Integer literals
   case class INTEGERLITERAL(value: Int) extends TokenInfo {
-    override def toString: String = "INTEGER_LITTERAL=" + value
+    override def toString: String = "INTEGER_LITERAL(" + value + ")"
     def tokenClass: TokenClass = INTEGERLITERALCLASS
   }
 
   // String literals
   case class STRINGLITERAL(value: String) extends TokenInfo {
-    override def toString: String = "STRING_LITTERAL=" + value
+    override def toString: String = "STRING_LITERAL('" + value + "')"
     def tokenClass: TokenClass = STRINGLITERALCLASS
   }
   

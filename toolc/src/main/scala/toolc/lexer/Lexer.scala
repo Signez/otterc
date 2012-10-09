@@ -76,7 +76,8 @@ trait Lexer {
    * Read the stream to find a new token.
    */
   def readToken(): Token = {
-    var token = Token(BAD);
+    var pos = 1;
+    var token = Token(BAD).setPos(1);
     
     if(source.pos == 0 && source.hasNext) source.next();
     
@@ -96,7 +97,7 @@ trait Lexer {
 		    
 		    return readToken();
         } else {
-        	return Token(DIV);
+        	return Token(DIV).setPos(source.pos - 1);
         }
     }
     
@@ -104,26 +105,28 @@ trait Lexer {
     // If we are at end of file, let's stop right know 
     // the process
     if(!source.hasNext) {
-      return Token(EOF)
+      return Token(EOF).setPos(source.pos)
     }
     
     // IDENTIFIERS & KEYWORDS =============================
     // All identifiers and keywords starts with integers
     if(source.ch.isLetter) {
+      pos = source.pos;
       var sourceString = readIdentifier();
       // Get the corresponding keyword-token if it exists, else return a simple identifier
-      return keywordMap.get(sourceString).getOrElse[Token](Token(ID(sourceString)));
+      return keywordMap.get(sourceString).getOrElse[Token](Token(ID(sourceString))).setPos(pos);
     }
     
     // STRINGS LITTERALS ==================================
     if(source.ch == '"') {
+      pos = source.pos;
       source.next();
       var text = readEverythingUntil('"');
       if(source.ch == '"') {
         source.next();
-        return Token(STRINGLITERAL(text));
+        return Token(STRINGLITERAL(text)).setPos(pos);
       } else {
-        return Token(BAD);
+        return Token(BAD).setPos(pos);
       }
     }
     
@@ -131,15 +134,18 @@ trait Lexer {
     if(source.ch >= '0' && source.ch <= '9') {
       if(source.ch == '0') {
         source.next();
-        return Token(INTEGERLITERAL(0));
+        return Token(INTEGERLITERAL(0)).setPos(source.pos);
       } else {
+        pos = source.pos;
         var integer = readInteger();
-        return Token(INTEGERLITERAL(integer));
+        return Token(INTEGERLITERAL(integer)).setPos(pos);
       }
     }
     
     
     // OTHER (SIMPLE) TOKENS ==============================
+    
+    pos = source.pos;
     
     token = source.ch match {
       case '(' => Token(OPAREN)
@@ -162,8 +168,9 @@ trait Lexer {
         if(source.ch == '&') {
           Token(AND);
         } else {
-          // Returning immediately, to not consume a character (readaheading)
-          return Token(BAD);
+          println("\n - Unexpected \"&\" characters, expecting \"&&\"");
+          // Returning immediately, to not consume the following character (readaheading)
+          return Token(BAD).setPos(source.pos);
         }
       }
       case '|' => {
@@ -171,17 +178,20 @@ trait Lexer {
         if(source.ch == '|') {
           Token(OR);
         } else {          
-          // Returning immediately, to not consume a character (readaheading)
-          return Token(BAD);
+    	  println("\n - Unexpected \"|\" characters, expecting \"||\"");
+    	  // Returning immediately, to not consume the following character (readaheading)
+          return Token(BAD).setPos(source.pos);
         }
       }
       case '=' => {
         source.next()
         if(source.ch == '=') {
+          // Two equals signs ?
           Token(EQUALS);
         } else {
-          // Returning immediately, to not consume a character (readaheading)
-          return Token(ASSIGN);
+          // Only on equals signs ?
+          // Returning immediately, to not consume the following character (readaheading)
+          return Token(ASSIGN).setPos(pos);
         }
       }
       case _ => {
@@ -193,7 +203,9 @@ trait Lexer {
     if(source.hasNext)
     	source.next();
     
-    return token
+    token.setPos(pos);
+    
+    return token;
   }
 
   /** 
@@ -206,6 +218,6 @@ trait Lexer {
     // Fixing position (first next)
     if(source.pos == 0) source.next()
     
-    return token.setPos(previously);
+    return token;
   }
 }
