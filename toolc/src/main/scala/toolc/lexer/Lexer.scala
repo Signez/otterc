@@ -73,20 +73,19 @@ trait Lexer {
   }
   
   /**
-   * Read the stream to find a new token.
+   * Consume all whitespaces characters from the stream, and stop
+   * when a non-whitespace characters shows up.
    */
-  def readToken(): Token = {
-    var pos = 1;
-    var token = Token(BAD).setPos(1);
-    
-    if(source.pos == 0 && source.hasNext) source.next();
-    
-    // WHITESPACES ========================================
-    // Trimming whitespaces
+  def trimWhitespaces() : Unit = {
     while(source.ch.isWhitespace && source.hasNext) source.next();
-    
-    // COMMENTS ===========================================
-    // Trimming comments, or returning DIV
+  }
+  
+  /**
+   * Trim comments.
+   * 
+   * Return a token if we encountered a operator when trying to readahead for comments.
+   */
+  def trimComments(): Option[Token] = {
     if(source.ch == '/') {
 	    source.next()
 	  
@@ -97,7 +96,7 @@ trait Lexer {
 		    
 		    if(source.hasNext) source.next(); // Consume the \n
 		    
-		    return readToken();
+		    return None;
         } else if(source.ch == '*') {
             // Trimming content of the comments until */
 		    while(source.hasNext && !(source.ch == '*' && source.next() == '/')) 
@@ -105,11 +104,35 @@ trait Lexer {
 		    
 		    if(source.hasNext) source.next(); // Consume the last / (from */)
 		    
-		    return readToken();
+		    return None;
         } else {
-        	return Token(DIV).setPos(source.pos - 1);
+        	return Some(Token(DIV).setPos(source.pos - 1));
         }
+    } else {
+      return None;
     }
+  }
+  
+  /**
+   * Read the stream to find a new token.
+   */
+  def readToken(): Token = {
+    var pos = 1;
+    var token = Token(BAD).setPos(1);
+    
+    if(source.pos == 0 && source.hasNext) source.next();
+    
+    // WHITESPACES ========================================
+    // Trimming whitespaces
+    trimWhitespaces();
+    
+    // COMMENTS ===========================================
+    // Trimming comments, or returning DIV
+    var maybeToken = trimComments();
+    if(maybeToken == Some) return maybeToken.get;
+    
+    // Trim whitespaces again, if there are after comments
+    trimWhitespaces();
     
     // EOF ================================================
     // If we are at end of file, let's stop right know 
@@ -151,7 +174,6 @@ trait Lexer {
         return Token(INTEGERLITERAL(integer)).setPos(pos);
       }
     }
-    
     
     // OTHER (SIMPLE) TOKENS ==============================
     
@@ -222,12 +244,9 @@ trait Lexer {
    * Works like an iterator, and returns the next token from the input stream. 
    */
   def nextToken: Token = {
-    val previously: Int = source.pos;
-    val token: Token = readToken();
-    
     // Fixing position (first next)
     if(source.pos == 0) source.next()
     
-    return token;
+    return readToken();
   }
 }
