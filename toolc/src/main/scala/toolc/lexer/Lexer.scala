@@ -85,7 +85,7 @@ trait Lexer {
    */
   def readToken(): Token = {
     var pos = 1;
-    var token = Token(BAD).setPos(1);
+    var token = Token(BAD);
     
     if(source.pos == 0 && source.hasNext) source.next();
     
