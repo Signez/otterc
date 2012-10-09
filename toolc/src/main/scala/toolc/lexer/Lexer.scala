@@ -21,26 +21,90 @@ trait Lexer {
   // Write as many helper functions as you need.
   
   val keywordMap = Map[String, Token](
+     ":" -> Token(COLON),
+     "," -> Token(COMMA),
+     "." -> Token(DOT),
+     "!" -> Token(BANG),
+     "&&" -> Token(AND),
+     "||" -> Token(OR),
+     "==" -> Token(EQUALS),
+     "<" -> Token(LESS),
+     "+" -> Token(PLUS),
+     "-" -> Token(MINUS),
+     "*" -> Token(MUL),
+     "/" -> Token(DIV),
+     ".length" -> Token(LENGTH),
+     "[" -> Token(OBRACKET),
+     "]" -> Token(CBRACKET),
      "(" -> Token(OPAREN),
      ")" -> Token(CPAREN),
+     "{" -> Token(OBLOCK),
+     "}" -> Token(CBLOCK),
+     "true" -> Token(TRUE),
+     "false" -> Token(FALSE),
+     "this" -> Token(THIS),
+     "new" -> Token(NEW),
+     "=" -> Token(ASSIGN),
+     "println" -> Token(PRINTLN),
+     "while" -> Token(WHILE),
      "if" -> Token(IF),
      "else" -> Token(ELSE),
-     "extends" -> Token(EXTENDS)
+     ";" -> Token(SEMICOLON),
+     "def" -> Token(DEF),
+     "var" -> Token(VAR),
+     "class" -> Token(CLASS),
+     "extends" -> Token(EXTENDS),
+     "return" -> Token(RETURN)
   );
   
-  /*def mapKeyword(leftKeyword: Map[String, Token], buffer: String): Token = {
-    var currentBuffer = buffer + source.ch;
-    for(keyword: String, token: Token <- leftKeyword if keyword.startsWith(currentBuffer)) {
-      
+  var buffer : String;
+  
+  /**
+   * recursively searches for a key word
+   */
+  def mapKeyword(leftKeywords: Map[String, Token], charPos: Int): Token = {
+    var filteredKeyword : Map[String, Token] = null;
+    var alternative : Token = null;
+    var longKeyword : Token = null;
+    
+    buffer += source.ch;
+    //filter tokens that correspond to the current character
+    for (
+    	filtered <- leftKeywords;
+    	(keyword: String, token: Token) = filtered;
+        if (keyword(charPos) == source.ch)
+    ) {
+    	if (keyword.length() == charPos+1) {
+    	  alternative = token;
+    	} else {
+    	  filteredKeyword += filtered
+    	}
     }
-  }*/
+    
+    //if some token were found, filter next character
+    if (!filteredKeyword.isEmpty){
+      if (source.hasNext) {
+    	source.next();
+      	longKeyword = mapKeyword(filteredKeyword, charPos+1);
+      }
+    }
+    
+    if (longKeyword != null) {
+      return longKeyword;
+    } else if (alternative != null) {
+      return alternative;
+    } else {
+      return null;
+    }
+  }
 
   /** Works like an iterator, and returns the next token from the input stream. */
   def nextToken: Token = {
-    source.ch match {
-      case '(' => Token(OPAREN);
-      case ')' => Token(CPAREN);
-    }
-    Token(EOF)
+	val token : Token = mapKeyword(keywordMap, 0);
+	if (token == null)
+	  //Todo: To be replaces by Stan's function
+	  return Token(BAD)
+	else
+	  return token
   }
 }
