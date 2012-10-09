@@ -95,6 +95,16 @@ trait Lexer {
 		    while(source.hasNext && source.ch != '\n') 
 		      source.next();
 		    
+		    if(source.hasNext) source.next(); // Consume the \n
+		    
+		    return readToken();
+        } else if(source.ch == '*') {
+            // Trimming content of the comments until */
+		    while(source.hasNext && !(source.ch == '*' && source.next() == '/')) 
+		      source.next();
+		    
+		    if(source.hasNext) source.next(); // Consume the last / (from */)
+		    
 		    return readToken();
         } else {
         	return Token(DIV).setPos(source.pos - 1);

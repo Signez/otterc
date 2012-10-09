@@ -76,7 +76,7 @@ object Tokens {
 
   // String literals
   case class STRINGLITERAL(value: String) extends TokenInfo {
-    override def toString: String = "STRING_LITERAL('" + value + "')"
+    override def toString: String = "STRING_LITERAL(\"" + value + "\")"
     def tokenClass: TokenClass = STRINGLITERALCLASS
   }
   
