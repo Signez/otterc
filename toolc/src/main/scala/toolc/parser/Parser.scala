@@ -24,12 +24,19 @@ trait Parser extends Lexer {
 
   def readToken: Unit = {
     /* update currentToken using nextToken in the Lexer. */
-    // ...
+    currentToken = nextToken
   }
 
-  /** ''Eats'' the expected token, or terminates with an error. */
-  private def eat(tokenClass: TokenClass): Unit = {
-    // ...
+  /** 
+   * ''Eats'' the expected token, or terminates with an error. 
+   * 
+   * Similar to skip in the course. 
+   */
+  private def eat(expectedTokenClass: TokenClass): Unit = {
+    if(expectedTokenClass != currentToken) {
+      expected(expectedTokenClass);
+    }
+    readToken;
   }
 
   /** Complains that what was found was not expected. The method accepts arbitrarily many arguments of type TokenClass */
@@ -38,7 +45,7 @@ trait Parser extends Lexer {
   }
 
   private def parseGoal: Tree = {
-    // ...
+    eat(OBJECT);
     null
   }
 
