@@ -92,7 +92,7 @@ trait Lexer {
   /**
    * Read the stream to find a new token.
    */
-  def readToken(): Token = {
+  private def readNewToken(): Token = {
     var pos = 1;
     var token = Token(BAD);
     
@@ -234,7 +234,7 @@ trait Lexer {
 		    
 		    if(source.hasNext) source.next(); // Consume the \n or / (in */)
 		    
-		    readToken(); // Find another token
+		    readNewToken(); // Find another token
         } else {
         	return Token(DIV).setPos(source.pos - 1);
         }
@@ -273,6 +273,6 @@ trait Lexer {
     // Fixing position (first next)
     if(source.pos == 0) source.next()
     
-    return readToken();
+    return readNewToken();
   }
 }
