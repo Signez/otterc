@@ -43,9 +43,31 @@ trait Parser extends Lexer {
   private def expected(tokenClass: TokenClass, more: TokenClass*): Nothing = {
     fatalError("expected: " + (tokenClass::more.toList).mkString(" or ") + ", found: " + currentToken, currentToken)
   }
+  
+  def parseStatement : Tree = {
+    // println ( stringConst , ident )
+	if (currentToken == PRINTLN) { 
+	  readToken;
+      eat(OPAREN); /*stringConst*/; eat(COMMA);
+      /*IDCLASS*/; eat(CPAREN);
+    // | ident = expr
+    } else if (currentToken == IDCLASS) {
+      readToken;
+      eat(ASSIGN); parseExpression
+      // | if ( expr ) statmt (else statmt)?
+    } else if (currentToken == IF) {
+      readToken;
+      eat(OPAREN); parseExpression; eat(CPAREN); parseStatement;
+      if (currentToken == ELSE) { readToken; parseStatement; }
+      // | while ( expr ) statmt
+    }
+  }
+  
+  def parseExpression : Tree = {}
 
   private def parseGoal: Tree = {
     eat(OBJECT);
+    return Tree
     null
   }
 
