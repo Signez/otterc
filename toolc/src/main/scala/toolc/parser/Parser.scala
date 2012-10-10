@@ -79,7 +79,11 @@ trait Parser extends Lexer {
       // | while ( expr ) statmt
      case WHILE =>
        readToken
-       return null
+       eat(OPAREN)
+       val expr : ExprTree = parseExpression
+       eat(CPAREN)
+       val stat : StatTree = parseStatement
+       return new While(expr, stat)
     }
   }
   
