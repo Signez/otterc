@@ -44,30 +44,48 @@ trait Parser extends Lexer {
     fatalError("expected: " + (tokenClass::more.toList).mkString(" or ") + ", found: " + currentToken, currentToken)
   }
   
-  def parseStatement : Tree = {
-    // println ( stringConst , ident )
-	if (currentToken == PRINTLN) { 
-	  readToken;
-      eat(OPAREN); /*stringConst*/; eat(COMMA);
-      /*IDCLASS*/; eat(CPAREN);
+  def parseStatement : StatTree = {
+    
+    currentToken.tokenClass match {
+    // println ( expression )
+    case PRINTLN =>
+	  readToken
+      eat(OPAREN)
+      val expr : ExprTree = parseExpression
+      eat(CPAREN)
+	  eat(SEMICOLON)
+      return new PrintLn(expr)
     // | ident = expr
-    } else if (currentToken == IDCLASS) {
-      readToken;
-      eat(ASSIGN); parseExpression
+    case IDCLASS =>
+      val ident : Identifier = parseIdentifier
+      readToken
+      eat(ASSIGN)
+      val expr : ExprTree = parseExpression
+      eat(SEMICOLON)
+      return new Assignment(ident, expr)
       // | if ( expr ) statmt (else statmt)?
-    } else if (currentToken == IF) {
-      readToken;
-      eat(OPAREN); parseExpression; eat(CPAREN); parseStatement;
-      if (currentToken == ELSE) { readToken; parseStatement; }
+     case IF =>
+      readToken
+      eat(OPAREN)
+      val expr : ExprTree = parseExpression
+      eat(CPAREN)
+      val stat : StatTree = parseStatement
+      var elseStat : Option[StatTree] =
+        if (currentToken == ELSE) {
+          readToken
+          new Some[StatTree](parseStatement)
+        } else null
+      return new If(expr, stat, elseStat)
       // | while ( expr ) statmt
+     case WHILE =>
+       readToken
+       return null
     }
   }
   
-  def parseExpression : Tree = {}
+  def parseExpression : ExprTree = {}
 
   private def parseGoal: Tree = {
-    eat(OBJECT);
-    return Tree
     null
   }
 
