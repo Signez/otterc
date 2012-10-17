@@ -234,7 +234,7 @@ trait Lexer {
 		    
 		    if(source.hasNext) source.next(); // Consume the \n or / (in */)
 		    
-		    readNewToken(); // Find another token
+		    return readNewToken(); // Find another token
         } else {
         	return Token(DIV).setPos(source.pos - 1);
         }
@@ -271,7 +271,8 @@ trait Lexer {
    */
   def nextToken: Token = {
     // Fixing position (first next)
-    if(source.pos == 0) source.next()
+    if(source.pos == 0) 
+      source.next()
     
     return readNewToken();
   }
