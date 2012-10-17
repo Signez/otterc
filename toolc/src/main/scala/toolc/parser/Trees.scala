@@ -8,7 +8,7 @@ object Trees {
   case class MainObject(id: Identifier, stat: StatTree) extends Tree
   case class ClassDecl(id: Identifier, extendz: Option[Identifier], 
                               variables: List[VarDecl], methods: List[MethodDecl]) extends Tree
-  case class VarDecl(id: Identifier, theType: TypeTree)
+  case class VarDecl(id: Identifier, theType: TypeTree) extends Tree
   case class MethodDecl(id: Identifier, arguments: List[VarDecl], returnType: TypeTree, 
                         variables: List[VarDecl], statements: List[StatTree], returnExpr: ExprTree) extends Tree
   
