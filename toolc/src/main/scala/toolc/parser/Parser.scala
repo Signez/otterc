@@ -50,10 +50,12 @@ trait Parser extends Lexer {
     val main = parseMainObject;
     val classes = parseClasses;
     
-    return new Program(main, classes);
+    return new Program(main, classes).setPos(main);
   }
   
   def parseMainObject: MainObject = {
+    val initial = currentToken;
+    
     eat(OBJECT);
     val id = parseIdentifier;
     eat(OBLOCK);
@@ -73,13 +75,15 @@ trait Parser extends Lexer {
     eat(CBLOCK);
     eat(CBLOCK);
     
-    return new MainObject(id, stat);
+    return new MainObject(id, stat).setPos(initial);
   }
   
   def parseClasses: List[ClassDecl] = {
     var classes : List[ClassDecl] = List();
     
     while(currentToken != EOF) {
+      val initial = currentToken;
+      
       eat(CLASS);
       val classId = parseIdentifier;
       var extendz = None;
@@ -92,7 +96,7 @@ trait Parser extends Lexer {
       val methods = parseMethodsDecl;
       eat(CBLOCK);
       
-      val classDecl = new ClassDecl(classId, extendz, variables, methods);
+      val classDecl = new ClassDecl(classId, extendz, variables, methods).setPos(initial);
       classes = classDecl :: classes;
     }
     
@@ -103,13 +107,15 @@ trait Parser extends Lexer {
     var variables : List[VarDecl] = List();
     
     while(currentToken == VAR) {
+      val initial = currentToken;
+      
       eat(VAR);
       val nameId = parseIdentifier;
       eat(COLON);
 	  val theType = parseType;
 	  eat(SEMICOLON);
 	  
-	  val variable = new VarDecl(nameId, theType);
+	  val variable = new VarDecl(nameId, theType).setPos(initial);
 	  
 	  variables = variable :: variables;
     }
@@ -127,19 +133,19 @@ trait Parser extends Lexer {
           eat(OBRACKET);
           eat(CBRACKET);
           
-          return new IntArrayType();
+          return new IntArrayType().setPos(typeId);
           
         // Int
         } else {
-          return new IntType();
+          return new IntType().setPos(typeId);
         }
         
       case "String" =>
         // String
-        return new StringType();
+        return new StringType().setPos(typeId);
         
       case "Bool" =>
-        return new BoolType();
+        return new BoolType().setPos(typeId);
         
       case _ =>
         return typeId;
@@ -150,6 +156,8 @@ trait Parser extends Lexer {
     var methods : List[MethodDecl] = List();
     
     while(currentToken == DEF) {
+        var initial = currentToken;
+        
 		eat(DEF);
 		val methodId = parseIdentifier;
 		eat(OPAREN);
@@ -185,7 +193,7 @@ trait Parser extends Lexer {
 		eat(RETURN);
 		val returnExpr = parseExpression;
 		
-		val method = new MethodDecl(methodId, arguments, returnType, variables, statements, returnExpr); 
+		val method = new MethodDecl(methodId, arguments, returnType, variables, statements, returnExpr).setPos(initial); 
     }
 	
     return methods.reverse;
@@ -256,7 +264,7 @@ trait Parser extends Lexer {
     if(currentToken == OR) {
       eat(OR);
       val rightExpr = parseOrExpr;
-      return new Or(leftExpr, rightExpr);
+      return new Or(leftExpr, rightExpr).setPos(leftExpr);
       
     } else {
       return leftExpr;
@@ -271,7 +279,7 @@ trait Parser extends Lexer {
     if(currentToken == AND) {
       eat(AND);
       val rightExpr = parseAndExpr;
-      return new And(leftExpr, rightExpr);
+      return new And(leftExpr, rightExpr).setPos(leftExpr);
       
     } else {
       return leftExpr;
@@ -286,13 +294,13 @@ trait Parser extends Lexer {
     if(currentToken == LESS) {
       eat(LESS);
       val rightExpr = parseEqualsLesserThanExpr;
-      return new LesserThan(leftExpr, rightExpr);
+      return new LesserThan(leftExpr, rightExpr).setPos(leftExpr);
       
     // leftExpr == rightExpr
     } else if(currentToken == EQUALS) {
       eat(EQUALS);
       val rightExpr = parseEqualsLesserThanExpr;
-      return new Equals(leftExpr, rightExpr);
+      return new Equals(leftExpr, rightExpr).setPos(leftExpr);
       
     } else {
       return leftExpr;
@@ -307,13 +315,13 @@ trait Parser extends Lexer {
     if(currentToken == PLUS) {
       eat(PLUS);
       val rightExpr = parsePlusMinusExpr;
-      return new Plus(leftExpr, rightExpr);
+      return new Plus(leftExpr, rightExpr).setPos(leftExpr);
       
     // leftExpr - rightExpr
     } else if(currentToken == MINUS) {
       eat(MINUS);
       val rightExpr = parsePlusMinusExpr;
-      return new Minus(leftExpr, rightExpr);
+      return new Minus(leftExpr, rightExpr).setPos(leftExpr);
       
     } else {
       return leftExpr;
@@ -328,13 +336,13 @@ trait Parser extends Lexer {
     if(currentToken == MUL) {
       eat(MUL);
       val rightExpr = parseMultiplyDivideExpr;
-      return new Multiply(leftExpr, rightExpr);
+      return new Multiply(leftExpr, rightExpr).setPos(leftExpr);
       
     // leftExpr / rightExpr
     } else if(currentToken == DIV) {
       eat(DIV);
       val rightExpr = parseMultiplyDivideExpr;
-      return new Divide(leftExpr, rightExpr);
+      return new Divide(leftExpr, rightExpr).setPos(leftExpr);
       
       
     } else {
@@ -343,13 +351,14 @@ trait Parser extends Lexer {
   }
   
   def parseNotExpr : ExprTree = {
+    val initial = currentToken;
     readToken;
     
     // !rightExpr
     if(currentToken == BANG) {
       eat(BANG);
       val rightExpr = parseNotExpr;
-      return rightExpr;
+      return new Not(rightExpr).setPos(initial);
       
     } else {
       return parseDotExpr;
@@ -367,13 +376,13 @@ trait Parser extends Lexer {
       // leftExpr.length
       if(currentToken == LENGTH) {
         eat(LENGTH);
-        return new Length(leftExpr);
+        return new Length(leftExpr).setPos(leftExpr);
         
       // leftExpr.methodId(paramList)
       } else {
         val methodId = parseIdentifier;
         val paramList = parseParametersList;
-        return new MethodCall(leftExpr, methodId, paramList);
+        return new MethodCall(leftExpr, methodId, paramList).setPos(leftExpr);
       }
     } else {
       return leftExpr;
@@ -390,7 +399,7 @@ trait Parser extends Lexer {
       var index = parseExpression;
       eat(CBRACKET);
       
-      return new Index(leftExpr, index);
+      return new Index(leftExpr, index).setPos(leftExpr);
     } else {
       return leftExpr;
     } 
@@ -416,7 +425,7 @@ trait Parser extends Lexer {
   }
   
   def parseSimpleExpr: ExprTree = {
-    readToken;
+    val initial = currentToken;
     
     currentToken.tokenClass match {
       // ( expr )
@@ -450,7 +459,8 @@ trait Parser extends Lexer {
         
       // this
       case THIS =>
-        return ThisObject();
+        eat(THIS);
+        return ThisObject().setPos(currentToken);
         
       case NEW =>
         eat(NEW);
@@ -461,18 +471,18 @@ trait Parser extends Lexer {
           eat(OBRACKET);
           val expr = parseExpression;
           eat(CBRACKET);
-          return new NewArray(expr);
+          return new NewArray(expr).setPos(initial);
           
         // new id()
         } else {
           eat(OPAREN);
 	      eat(CPAREN);
-	      return new NewObject(id);
+	      return new NewObject(id).setPos(initial);
         }
         
         
       case _ =>
-        expected(OPAREN, IDCLASS, INTEGERLITERALCLASS, STRINGLITERALCLASS, TRUE, FALSE)
+        expected(OPAREN, IDCLASS, INTEGERLITERALCLASS, STRINGLITERALCLASS, TRUE, FALSE, THIS, NEW)
     }
   }
 
