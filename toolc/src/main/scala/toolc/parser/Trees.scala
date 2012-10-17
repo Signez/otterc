@@ -55,5 +55,5 @@ object Trees {
   
   case class ThisObject() extends ExprTree                                     // this
   
-  case class Identifier(value: String) extends TypeTree with ExprTree // special case :)
+  case class Identifier(value: String) extends TypeTree with ExprTree 		   // special case :)
 }

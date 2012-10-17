@@ -111,6 +111,14 @@ trait Parser extends Lexer {
   def parseStatement : StatTree = {
     
     currentToken.tokenClass match {
+    case OBLOCK =>
+      var list: List[StatTree] = List();
+      readToken
+      while (currentToken != CBLOCK || currentToken == EOF) {
+        list = parseStatement :: list
+      }
+      readToken
+      return new Block(list)
     // println ( expression )
     case PRINTLN =>
 	  readToken
