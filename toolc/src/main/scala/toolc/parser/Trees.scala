@@ -38,12 +38,11 @@ object Trees {
   case class Or(lhs: ExprTree, rhs: ExprTree) extends ExprTree                 // lhs || rhs
   case class And(lhs: ExprTree, rhs: ExprTree) extends ExprTree                // lhs && rhs
   case class Equals(lhs: ExprTree, rhs: ExprTree) extends ExprTree             // lhs == rhs
-  case class GreaterThan(lhs: ExprTree, rhs: ExprTree) extends ExprTree        // lhs < rhs
+  case class LesserThan(lhs: ExprTree, rhs: ExprTree) extends ExprTree        // lhs < rhs
   case class Index(lhs: ExprTree, rhs: ExprTree) extends ExprTree              // lhs[rhs]
   case class Length(expr: ExprTree) extends ExprTree                           // expr.length
   case class Not(expr: ExprTree) extends ExprTree                              // !expr
-  case class Parenthesis(expr: ExprTree) extends ExprTree                      // (expr)
-  case class MethodCall(objectId: Identifier, methodId: Identifier, 
+  case class MethodCall(objectId: ExprTree, methodId: Identifier, 
 		  				expressions: List[ExprTree]) extends ExprTree          // objectId.methodId(expressions...)
   
   case class IntegerLiteral(value: Int) extends ExprTree                       // value (int)
@@ -53,6 +52,8 @@ object Trees {
   case class Variable(id: Identifier) extends ExprTree                         // id
   case class NewArray(length: ExprTree) extends ExprTree                       // new Int[length]
   case class NewObject(objectId: Identifier) extends ExprTree                  // new objectId()
+  
+  case class ThisObject() extends ExprTree                                     // this
   
   case class Identifier(value: String) extends TypeTree with ExprTree // special case :)
 }
