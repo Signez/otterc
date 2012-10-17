@@ -87,25 +87,108 @@ trait Parser extends Lexer {
         eat(EXTENDS);
         val extendz = Some(parseIdentifier);
       }
+      eat(OBLOCK);
       val variables = parseVariablesDecl;
       val methods = parseMethodsDecl;
+      eat(CBLOCK);
       
       val classDecl = new ClassDecl(classId, extendz, variables, methods);
       classes = classDecl :: classes;
     }
     
-    // TODO: Fill that list
     return classes.reverse;
   }
   
   def parseVariablesDecl: List[VarDecl] = {
-    // TODO: Fill that list with variables declarations
+    var variables : List[VarDecl] = List();
+    
+    while(currentToken == VAR) {
+      eat(VAR);
+      val nameId = parseIdentifier;
+      eat(COLON);
+	  val theType = parseType;
+	  eat(SEMICOLON);
+	  
+	  val variable = new VarDecl(nameId, theType);
+	  
+	  variables = variable :: variables;
+    }
+    
 	return List();
   }
   
+  def parseType: TypeTree = {
+    val typeId = parseIdentifier;
+    
+    typeId.value match {
+      case "Int" =>
+        // Int[]
+        if(currentToken == OBRACKET) {
+          eat(OBRACKET);
+          eat(CBRACKET);
+          
+          return new IntArrayType();
+          
+        // Int
+        } else {
+          return new IntType();
+        }
+        
+      case "String" =>
+        // String
+        return new StringType();
+        
+      case "Bool" =>
+        return new BoolType();
+        
+      case _ =>
+        return typeId;
+    }
+  }
+  
   def parseMethodsDecl: List[MethodDecl] = {
-    // TODO: Fill that list with methods declarations
-    return List();
+    var methods : List[MethodDecl] = List();
+    
+    while(currentToken == DEF) {
+		eat(DEF);
+		val methodId = parseIdentifier;
+		eat(OPAREN);
+		
+		var arguments: List[VarDecl] = List();
+		if(currentToken != CPAREN) {
+		  while(currentToken != CPAREN) {
+		    if(arguments.length > 0)
+		      eat(COMMA);
+		    
+			val argId = parseIdentifier;
+		    eat(COLON);
+		    val firstVarType = parseType;
+		  }
+		}
+		
+		eat(CPAREN);
+		eat(COLON);
+		
+		val returnType = parseType;
+		
+		eat(ASSIGN);
+		eat(OBLOCK);
+		
+		val variables = parseVariablesDecl;
+		
+		var statements : List[StatTree] = List();
+		while(currentToken != RETURN) {
+		  val stat = parseStatement; 
+		  statements = stat :: statements;
+		}
+		
+		eat(RETURN);
+		val returnExpr = parseExpression;
+		
+		val method = new MethodDecl(methodId, arguments, returnType, variables, statements, returnExpr); 
+    }
+	
+    return methods.reverse;
   }
   
   def parseStatement : StatTree = {
