@@ -59,12 +59,22 @@ trait Parser extends Lexer {
     case IDCLASS =>
       val ident : Identifier = parseIdentifier
       readToken
-      eat(ASSIGN)
-      val expr : ExprTree = parseExpression
-      eat(SEMICOLON)
-      return new Assignment(ident, expr)
-      // | if ( expr ) statmt (else statmt)?
-     case IF =>
+      if (currentToken == OBRACKET) {
+	    readToken
+	    val idx : ExprTree = parseExpression
+	    eat(CBRACKET)
+	    eat(ASSIGN)
+	    val expr : ExprTree = parseExpression
+	    eat(SEMICOLON)
+	    return new IndexAssignment(ident, idx, expr)
+      } else {
+    	eat(ASSIGN)
+	    val expr : ExprTree = parseExpression
+	    eat(SEMICOLON)
+	    return new Assignment(ident, expr)
+      }
+    // | if ( expr ) statmt (else statmt)?
+    case IF =>
       readToken
       eat(OPAREN)
       val expr : ExprTree = parseExpression
@@ -76,8 +86,8 @@ trait Parser extends Lexer {
           new Some[StatTree](parseStatement)
         } else null
       return new If(expr, stat, elseStat)
-      // | while ( expr ) statmt
-     case WHILE =>
+    // | while ( expr ) statmt
+    case WHILE =>
        readToken
        eat(OPAREN)
        val expr : ExprTree = parseExpression
