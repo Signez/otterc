@@ -257,6 +257,8 @@ trait Parser extends Lexer {
        eat(CPAREN)
        val stat : StatTree = parseStatement
        return new While(expr, stat)
+    case _ =>
+      expected(OBLOCK, PRINTLN, IDCLASS, IF, WHILE)
     }
   }
   
