@@ -108,14 +108,14 @@ object TreePrinter {
                printTree(expr, 0) + ";" + NEWLINE
      
      //Expression ( && | || | == | < | + | - | * | / ) Expression
-     case Plus(lhs, rhs) => printTree(lhs, 0) + " + " + printTree(rhs, 0)
-     case Minus(lhs, rhs) => printTree(lhs, 0) + " - " + printTree(rhs, 0)
-     case Multiply(lhs, rhs) => printTree(lhs, 0) + " * " + printTree(rhs, 0)
-     case Divide(lhs, rhs) => printTree(lhs, 0) + " / " + printTree(rhs, 0)
-     case Or(lhs, rhs) => printTree(lhs, 0) + " || " + printTree(rhs, 0)
-     case And(lhs, rhs) => printTree(lhs, 0) + " && " + printTree(rhs, 0)
-     case Equals(lhs, rhs) => printTree(lhs, 0) + " == " + printTree(rhs, 0)
-     case LesserThan(lhs, rhs) => printTree(lhs, 0) + " < " + printTree(rhs, 0)
+     case Plus(lhs, rhs) => "(" + printTree(lhs, 0) + " + " + printTree(rhs, 0) + ")"
+     case Minus(lhs, rhs) => "(" + printTree(lhs, 0) + " - " + printTree(rhs, 0) + ")"
+     case Multiply(lhs, rhs) => "(" + printTree(lhs, 0) + " * " + printTree(rhs, 0) + ")"
+     case Divide(lhs, rhs) => "(" + printTree(lhs, 0) + " / " + printTree(rhs, 0) + ")"
+     case Or(lhs, rhs) => "(" + printTree(lhs, 0) + " || " + printTree(rhs, 0) + ")"
+     case And(lhs, rhs) => "(" + printTree(lhs, 0) + " && " + printTree(rhs, 0) + ")"
+     case Equals(lhs, rhs) => "(" + printTree(lhs, 0) + " == " + printTree(rhs, 0) + ")"
+     case LesserThan(lhs, rhs) => "(" + printTree(lhs, 0) + " < " + printTree(rhs, 0) + ")"
      
      //Expression [ Expression ]
      case Index(lhs, rhs) => printTree(lhs, 0) + "[" + printTree(rhs, 0) + "]"
