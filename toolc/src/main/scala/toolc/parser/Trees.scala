@@ -49,11 +49,10 @@ object Trees {
   case class StringLiteral(value: String) extends ExprTree                     // "value"
   case class BooleanLiteral(value: Boolean) extends ExprTree                   // value (true or false)
   
-  case class Variable(id: Identifier) extends ExprTree                         // id
   case class NewArray(length: ExprTree) extends ExprTree                       // new Int[length]
   case class NewObject(objectId: Identifier) extends ExprTree                  // new objectId()
   
   case class ThisObject() extends ExprTree                                     // this
   
-  case class Identifier(value: String) extends TypeTree with ExprTree 		   // special case :)
+  case class Identifier(value: String) extends TypeTree with ExprTree 		   // id (special case :)
 }
