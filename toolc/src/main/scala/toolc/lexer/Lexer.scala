@@ -24,6 +24,7 @@ trait Lexer {
    * Note that doesn't contain any "primitive" types as they are NOT 
    * keywords but special type identifiers handled in the Parser layer.
    */
+  // TODO FIXME Make your life simpler, and treat types and 'main' as keywords.
   val keywordMap = Map[String, Token](
      "if" -> Token(IF),
      "else" -> Token(ELSE),
@@ -127,6 +128,8 @@ trait Lexer {
       pos = source.pos;
       source.next();
       
+      // TODO FIXME You should not accept newline characters in string literals
+      
       // ...then reading all the text that follows, until the next double-quote
       var text = readEverythingUntil('"');
       
@@ -137,7 +140,7 @@ trait Lexer {
       } else {
         // Reached end-of-file : this is wrong!
         isEOF = true;
-        println(" - Unexpected EOF, expecting double-quote after that position");
+        error(" - Unexpected EOF, expecting double-quote after that position", pos);
         return Token(BAD).setPos(pos);
       }
     }
@@ -183,7 +186,7 @@ trait Lexer {
         if(source.ch == '&') {
           Token(AND);
         } else {
-          println("\n - Unexpected \"&\" characters, expecting \"&&\"");
+          error("\n - Unexpected \"&\" characters, expecting \"&&\"", source.pos);
           // Returning immediately, to not consume the following character (readaheading)
           return Token(BAD).setPos(source.pos);
         }
@@ -194,7 +197,7 @@ trait Lexer {
         if(source.ch == '|') {
           Token(OR);
         } else {          
-    	  println("\n - Unexpected \"|\" characters, expecting \"||\"");
+    	  error("\n - Unexpected \"|\" characters, expecting \"||\"", source.pos);
     	  // Returning immediately, to not consume the following character (readaheading)
           return Token(BAD).setPos(source.pos);
         }
@@ -227,7 +230,7 @@ trait Lexer {
 			      source.next();
 			    
 			    if(!source.hasNext) {
-			      println("\n - Unexpected EOF, expecting \"*/\"");
+			      error("\n - Unexpected EOF, expecting \"*/\"");
 			      return Token(BAD).setPos(source.pos);
 			    }
 	    	}
@@ -249,7 +252,7 @@ trait Lexer {
         } else {
           // An unexpected character appears. Let's print an error message
           
-          println("\n - Unexpected character : " + source.ch + " (" + source.ch.asDigit + ")");
+          error("\n - Unexpected character : " + source.ch, source.pos)
           Token(BAD);
         }
       }
