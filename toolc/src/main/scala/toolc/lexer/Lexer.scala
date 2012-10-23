@@ -24,7 +24,6 @@ trait Lexer {
    * Note that doesn't contain any "primitive" types as they are NOT 
    * keywords but special type identifiers handled in the Parser layer.
    */
-  // TODO FIXME Make your life simpler, and treat types and 'main' as keywords.
   val keywordMap = Map[String, Token](
      "if" -> Token(IF),
      "else" -> Token(ELSE),
@@ -41,7 +40,12 @@ trait Lexer {
      "class" -> Token(CLASS),
      "extends" -> Token(EXTENDS),
      "return" -> Token(RETURN),
-     "object" -> Token(OBJECT)
+     "object" -> Token(OBJECT),
+     "main" -> Token(MAIN),
+     "Int" -> Token(INT),
+     "String" -> Token(STRING),
+     "Bool" -> Token(BOOL),
+     "Unit" -> Token(UNIT)
   );
   
   /**
