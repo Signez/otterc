@@ -347,23 +347,22 @@ trait Parser extends Lexer {
    * leftExpr == rightExpr 
    */
   def parseEqualsLesserThanExpr : ExprTree = {    
-    val leftExpr = parsePlusMinusExpr;
+    var expr = parsePlusMinusExpr;
     
-    // leftExpr < rightExpr
-    if(currentToken.info == LESS) {
-      eat(LESS);
-      val rightExpr = parseEqualsLesserThanExpr;
-      return new LesserThan(leftExpr, rightExpr).setPos(leftExpr);
-      
-    // leftExpr == rightExpr
-    } else if(currentToken.info == EQUALS) {
-      eat(EQUALS);
-      val rightExpr = parseEqualsLesserThanExpr;
-      return new Equals(leftExpr, rightExpr).setPos(leftExpr);
-      
-    } else {
-      return leftExpr;
-    }
+	while(currentToken.info == LESS || currentToken.info == EQUALS) {
+	  // leftExpr < rightExpr
+	  if(currentToken.info == LESS) {
+	    eat(LESS);
+	    expr = new LesserThan(expr, parsePlusMinusExpr).setPos(expr);
+	    
+	  // leftExpr == rightExpr
+	  } else if(currentToken.info == EQUALS) {
+	    eat(EQUALS);
+	    expr = new Equals(expr, parsePlusMinusExpr).setPos(expr);
+	  }
+	}
+	
+	return expr;
   }
   
   /**
@@ -373,23 +372,21 @@ trait Parser extends Lexer {
    * leftExpr - rightExpr
    */
   def parsePlusMinusExpr : ExprTree = {    
-    val leftExpr = parseMultiplyDivideExpr;
+    var expr = parseMultiplyDivideExpr;
     
-    // leftExpr + rightExpr
-    if(currentToken.info == PLUS) {
-      eat(PLUS);
-      val rightExpr = parsePlusMinusExpr;
-      return new Plus(leftExpr, rightExpr).setPos(leftExpr);
-      
-    // leftExpr - rightExpr
-    } else if(currentToken.info == MINUS) {
-      eat(MINUS);
-      val rightExpr = parsePlusMinusExpr;
-      return new Minus(leftExpr, rightExpr).setPos(leftExpr);
-      
-    } else {
-      return leftExpr;
+    while(currentToken.info == PLUS || currentToken.info == MINUS) {
+    	// leftExpr + rightExpr
+	    if(currentToken.info == PLUS) {
+	      eat(PLUS);
+	      expr = new Plus(expr, parseMultiplyDivideExpr).setPos(expr);
+	      
+	    // leftExpr - rightExpr
+	    } else if(currentToken.info == MINUS) {
+	      eat(MINUS);
+	      expr = new Minus(expr, parseMultiplyDivideExpr).setPos(expr);
+	    }
     }
+    return expr;
   }
   
   /**
@@ -399,24 +396,22 @@ trait Parser extends Lexer {
    * leftExpr / rightExpr
    */
   def parseMultiplyDivideExpr : ExprTree = {    
-    val leftExpr = parseNotExpr;
+    var expr = parseNotExpr;
     
-    // leftExpr * rightExpr
-    if(currentToken.info == MUL) {
-      eat(MUL);
-      val rightExpr = parseMultiplyDivideExpr;
-      return new Multiply(leftExpr, rightExpr).setPos(leftExpr);
-      
-    // leftExpr / rightExpr
-    } else if(currentToken.info == DIV) {
-      eat(DIV);
-      val rightExpr = parseMultiplyDivideExpr;
-      return new Divide(leftExpr, rightExpr).setPos(leftExpr);
-      
-      
-    } else {
-      return leftExpr;
+    while(currentToken.info == MUL || currentToken.info == DIV) {
+    	// leftExpr * rightExpr
+	    if(currentToken.info == MUL) {
+	      eat(MUL);
+	      expr = new Multiply(expr, parseNotExpr).setPos(expr);
+	      
+	    // leftExpr / rightExpr
+	    } else if(currentToken.info == DIV) {
+	      eat(DIV);
+	      expr = new Divide(expr, parseNotExpr).setPos(expr);
+	    }
     }
+    
+    return expr;
   }
   
   /**
