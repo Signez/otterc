@@ -207,13 +207,16 @@ trait Parser extends Lexer {
 		  val stat = parseStatement; 
 		  statements = stat :: statements;
 		}
+		statements = statements.reverse
 		
 		eat(RETURN);
 		val returnExpr = parseExpression;
 		eat(SEMICOLON);
 		eat(CBLOCK);
 		
-		val method = new MethodDecl(methodId, arguments, returnType, variables, statements, returnExpr).setPos(initial); 
+		val method = new MethodDecl(methodId, arguments, returnType, variables, statements, returnExpr).setPos(initial);
+		
+		methods = method :: methods;
     }
 	
     return methods.reverse;
@@ -232,7 +235,7 @@ trait Parser extends Lexer {
         list = parseStatement :: list
       }
       readToken
-      return new Block(list)
+      return new Block(list.reverse)
       
     // println ( expression )
     case PRINTLN =>
