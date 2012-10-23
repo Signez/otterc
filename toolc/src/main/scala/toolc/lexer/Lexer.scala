@@ -75,13 +75,17 @@ trait Lexer {
   }
   
   /**
-   * Read any character until `endChar` shows up in the stream.
+   * Read any character until `endChar` shows up in the stream, or 
+   * a newline is encountered.
    */
   def readEverythingUntil(endChar : Char): String = {
     var buffer = "";
-    while(source.ch != -1 && source.ch != endChar) {
+    while(source.ch != -1 && source.ch != endChar && source.ch != '\n') {
       buffer += source.ch;
       source.next();
+    }
+    if(source.ch == '\n') {
+      error("Unexpected newline encountred in string litteral.")
     }
     return buffer;
   }
@@ -131,9 +135,7 @@ trait Lexer {
       // We found the first double-quote : saving the position...
       pos = source.pos;
       source.next();
-      
-      // TODO FIXME You should not accept newline characters in string literals
-      
+            
       // ...then reading all the text that follows, until the next double-quote
       var text = readEverythingUntil('"');
       
