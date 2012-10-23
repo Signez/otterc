@@ -131,7 +131,7 @@ object TreePrinter {
      }
      
 	 //! Expression
-     case Not(expr) => "!" + printTree(expr, 0)
+     case Not(expr) => "!(" + printTree(expr, 0) + ")"
 		  			
      //<INTEGER_LITERAL>
      case IntegerLiteral(value) => value.toString
