@@ -15,7 +15,7 @@ do
     echo "[  OK  ] Diff $i"
 
 PLOP=`java -jar $TOOLC --lint /tmp/recompiled.tool 2>&1 > /tmp/recompiled.lint`
-    if [ "$?" -gt 0 ]
+    if [ "`cat /tmp/recompiled.lint | grep -v Picked | wc -l`" -gt 0 ]
     then
       echo "[ FAIL ] $i ; lint : "
       cat /tmp/recompiled.lint
@@ -36,5 +36,3 @@ PLOP=`java -jar $TOOLC --lint /tmp/recompiled.tool 2>&1 > /tmp/recompiled.lint`
   fi
   
 done
-
-cd ~
