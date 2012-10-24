@@ -5,7 +5,13 @@ object TreePrinter {
 
   val NEWLINE : String = "\n"
   
-  def apply(t: Tree): String = {
+  /** TreePrinter(tree) will produce the same result as before. */
+  def apply: (Tree=>String) = apply(false)_
+
+  /** TreePrinter.withSymbolIDs(tree) will print the tree with the IDs. */
+  def withSymbolIDs: (Tree=>String) = apply(true)_
+  
+  def apply(withSymbolIds: Boolean)(t: Tree): String = {
     /* construct and return the appropriate string ... */
     printTree(t, 0)
   }
@@ -144,7 +150,15 @@ object TreePrinter {
        if (value) "true" else "false"
        
      //Identifier
-     case Identifier(value) => value.toString
+     case id @ Identifier(value) => {
+         /*if(withSymbolIDs) {
+            try {
+              id.getSymbol.name + "#" + id.getSymbol.id
+            } catch {
+              case e: java.lang.RuntimeException => value + "#??"
+            }
+          } else */value
+     }
    
      //this
      case ThisObject() => "this"
