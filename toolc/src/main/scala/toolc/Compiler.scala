@@ -4,15 +4,13 @@ import scala.io.Source
 
 import parser.Parser
 
-class Compiler(val fileName: String) extends Reporter with Parser with Analyzer {
+class Compiler(val fileName: String) extends Reporter with Parser {
   import lexer.Tokens._
 
   val source: Source = Source.fromFile(fileName).withPositioning(true)
 
   def compile: Unit = {
     import parser.Trees._
-    import analyzer.Symbols._
-
 
     // Parsing
     var parsedTree: Option[Tree] = None
@@ -24,11 +22,7 @@ class Compiler(val fileName: String) extends Reporter with Parser with Analyzer 
       case _ => sys.error("Main program expected from parser.")
     }
 
-    // Name analysis
-    val global: GlobalScope = analyzeSymbols(mainProg)
-    terminateIfErrors
-
-    // Pretty-printing with symbols
-    println(TreePrinter.withSymbolIDs(mainProg))
+    // pretty printing:
+    println(TreePrinter(mainProg))
   }
 }
