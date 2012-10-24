@@ -347,22 +347,23 @@ trait Parser extends Lexer {
    * leftExpr == rightExpr 
    */
   def parseEqualsLesserThanExpr : ExprTree = {    
-    var expr = parsePlusMinusExpr;
+    val leftExpr = parsePlusMinusExpr;
     
-	while(currentToken.info == LESS || currentToken.info == EQUALS) {
-	  // leftExpr < rightExpr
-	  if(currentToken.info == LESS) {
-	    eat(LESS);
-	    expr = new LesserThan(expr, parsePlusMinusExpr).setPos(expr);
-	    
-	  // leftExpr == rightExpr
-	  } else if(currentToken.info == EQUALS) {
-	    eat(EQUALS);
-	    expr = new Equals(expr, parsePlusMinusExpr).setPos(expr);
-	  }
-	}
-	
-	return expr;
+    // leftExpr < rightExpr
+    if(currentToken.info == LESS) {
+      eat(LESS);
+      val rightExpr = parseEqualsLesserThanExpr;
+      return new LesserThan(leftExpr, rightExpr).setPos(leftExpr);
+      
+    // leftExpr == rightExpr
+    } else if(currentToken.info == EQUALS) {
+      eat(EQUALS);
+      val rightExpr = parseEqualsLesserThanExpr;
+      return new Equals(leftExpr, rightExpr).setPos(leftExpr);
+      
+    } else {
+      return leftExpr;
+    }
   }
   
   /**
@@ -372,21 +373,23 @@ trait Parser extends Lexer {
    * leftExpr - rightExpr
    */
   def parsePlusMinusExpr : ExprTree = {    
-    var expr = parseMultiplyDivideExpr;
+    val leftExpr = parseMultiplyDivideExpr;
     
-    while(currentToken.info == PLUS || currentToken.info == MINUS) {
-    	// leftExpr + rightExpr
-	    if(currentToken.info == PLUS) {
-	      eat(PLUS);
-	      expr = new Plus(expr, parseMultiplyDivideExpr).setPos(expr);
-	      
-	    // leftExpr - rightExpr
-	    } else if(currentToken.info == MINUS) {
-	      eat(MINUS);
-	      expr = new Minus(expr, parseMultiplyDivideExpr).setPos(expr);
-	    }
+    // leftExpr + rightExpr
+    if(currentToken.info == PLUS) {
+      eat(PLUS);
+      val rightExpr = parsePlusMinusExpr;
+      return new Plus(leftExpr, rightExpr).setPos(leftExpr);
+      
+    // leftExpr - rightExpr
+    } else if(currentToken.info == MINUS) {
+      eat(MINUS);
+      val rightExpr = parsePlusMinusExpr;
+      return new Minus(leftExpr, rightExpr).setPos(leftExpr);
+      
+    } else {
+      return leftExpr;
     }
-    return expr;
   }
   
   /**
@@ -396,22 +399,24 @@ trait Parser extends Lexer {
    * leftExpr / rightExpr
    */
   def parseMultiplyDivideExpr : ExprTree = {    
-    var expr = parseNotExpr;
+    val leftExpr = parseNotExpr;
     
-    while(currentToken.info == MUL || currentToken.info == DIV) {
-    	// leftExpr * rightExpr
-	    if(currentToken.info == MUL) {
-	      eat(MUL);
-	      expr = new Multiply(expr, parseNotExpr).setPos(expr);
-	      
-	    // leftExpr / rightExpr
-	    } else if(currentToken.info == DIV) {
-	      eat(DIV);
-	      expr = new Divide(expr, parseNotExpr).setPos(expr);
-	    }
+    // leftExpr * rightExpr
+    if(currentToken.info == MUL) {
+      eat(MUL);
+      val rightExpr = parseMultiplyDivideExpr;
+      return new Multiply(leftExpr, rightExpr).setPos(leftExpr);
+      
+    // leftExpr / rightExpr
+    } else if(currentToken.info == DIV) {
+      eat(DIV);
+      val rightExpr = parseMultiplyDivideExpr;
+      return new Divide(leftExpr, rightExpr).setPos(leftExpr);
+      
+      
+    } else {
+      return leftExpr;
     }
-    
-    return expr;
   }
   
   /**
@@ -457,37 +462,31 @@ trait Parser extends Lexer {
    * Parse a dot expression.
    * 
    * leftExpr.length
-   * leftExpr.methodId
+   * leftExpr.methodId(parameters...)
    */
   def parseDotExpr: ExprTree = {
-    val leftExpr = parseSimpleExpr;
+    var expr = parseSimpleExpr;
         
     // leftExpr.
     if(currentToken.info == DOT) {
-      var calls = List[Pair[Identifier, List[ExprTree]]]();
       while(currentToken.info == DOT) {
 	      eat(DOT);
 	      
 	      // leftExpr.length
 	      if(currentToken.info == LENGTH) {
 	        eat(LENGTH);
-	        return new Length(leftExpr).setPos(leftExpr);
+	        expr = new Length(expr).setPos(expr);
 	        
 	      // leftExpr.methodId(paramList)
 	      } else {
 	        val methodId = parseIdentifier;
 	        val paramList = parseParametersList;
-	        calls = Pair(methodId, paramList) :: calls;
+	        expr = new MethodCall(expr, methodId, paramList).setPos(expr)
 	      }
       }
-      var currExpr = leftExpr;
-      calls.reverse.foreach(
-          (pair) => { currExpr = new MethodCall(currExpr, pair._1, pair._2).setPos(leftExpr) }
-      )
-      currExpr
-    } else {
-      return leftExpr;
-    } 
+    }
+	
+    return expr; 
   }
   
   /**
