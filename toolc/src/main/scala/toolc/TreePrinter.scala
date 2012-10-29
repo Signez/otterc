@@ -15,7 +15,7 @@ object TreePrinter {
 
     // This adds a symbol id to identifiers, or question marks if it is unset.
     case id @ Identifier(value) => {
-          if(withSymbolIDs) {
+          if(withSymbolIds) {
             try {
               id.getSymbol.name + "#" + id.getSymbol.id
             } catch {
