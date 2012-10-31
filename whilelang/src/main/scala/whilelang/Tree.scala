@@ -72,7 +72,7 @@ object TreePrinter {
         incLevel; printInline(body); decLevel
         printInc; println("}")
       }
-      case Block(body) => body.foreach(printInline(_))
+      case Block(body) => body.foreach(printInline(_));
       case Skip => ;
     }
   }

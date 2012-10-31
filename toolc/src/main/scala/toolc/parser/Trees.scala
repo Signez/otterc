@@ -7,10 +7,11 @@ object Trees {
   case class Program(main: MainObject, classes: List[ClassDecl]) extends Tree
   case class MainObject(id: Identifier, stat: StatTree) extends Tree
   case class ClassDecl(id: Identifier, extendz: Option[Identifier], 
-                              variables: List[VarDecl], methods: List[MethodDecl]) extends Tree
-  case class VarDecl(id: Identifier, theType: TypeTree) extends Tree
+                              variables: List[VarDecl], methods: List[MethodDecl]) extends Tree with Symbolic[ClassSymbol]
+  case class VarDecl(id: Identifier, theType: TypeTree) extends Tree with Symbolic[VariableSymbol]
   case class MethodDecl(id: Identifier, arguments: List[VarDecl], returnType: TypeTree, 
-                        variables: List[VarDecl], statements: List[StatTree], returnExpr: ExprTree) extends Tree
+                        variables: List[VarDecl], statements: List[StatTree], returnExpr: ExprTree)
+                        extends Tree with Symbolic[MethodSymbol]
   
 
   sealed trait TypeTree extends Tree
@@ -38,7 +39,7 @@ object Trees {
   case class Or(lhs: ExprTree, rhs: ExprTree) extends ExprTree                 // lhs || rhs
   case class And(lhs: ExprTree, rhs: ExprTree) extends ExprTree                // lhs && rhs
   case class Equals(lhs: ExprTree, rhs: ExprTree) extends ExprTree             // lhs == rhs
-  case class LesserThan(lhs: ExprTree, rhs: ExprTree) extends ExprTree        // lhs < rhs
+  case class LesserThan(lhs: ExprTree, rhs: ExprTree) extends ExprTree         // lhs < rhs
   case class Index(lhs: ExprTree, rhs: ExprTree) extends ExprTree              // lhs[rhs]
   case class Length(expr: ExprTree) extends ExprTree                           // expr.length
   case class Not(expr: ExprTree) extends ExprTree                              // !expr
@@ -52,7 +53,7 @@ object Trees {
   case class NewArray(length: ExprTree) extends ExprTree                       // new Int[length]
   case class NewObject(objectId: Identifier) extends ExprTree                  // new objectId()
   
-  case class ThisObject() extends ExprTree                                     // this
+  case class ThisObject() extends ExprTree with Symbolic[ClassSymbol]          // this
   
-  case class Identifier(value: String) extends TypeTree with ExprTree 		   // id (special case :)
+  case class Identifier(value: String) extends TypeTree with ExprTree with Symbolic[Symbol]		   // id (special case :)
 }

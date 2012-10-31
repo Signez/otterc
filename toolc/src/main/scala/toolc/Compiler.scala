@@ -1,8 +1,8 @@
 package toolc
 
 import scala.io.Source
-
 import parser.Parser
+import analyzer.Analyzer
 
 class Compiler(val fileName: String) extends Reporter with Parser {
   import lexer.Tokens._

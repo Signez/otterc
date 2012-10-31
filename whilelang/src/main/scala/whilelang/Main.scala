@@ -24,6 +24,7 @@ object Main {
 
         println("Simplified source of " + fileName + ":")
         val converted = TreeSimplifier(parsed)
+        TreePrinter(converted)
         println("Running interpreter again")
         interpreter.run(converted)
       } catch {

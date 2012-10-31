@@ -147,13 +147,12 @@ object TreePrinter {
           //Identifier
           case id @ Identifier(value) => {
             if(withSymbolIDs) {
-	            try {
-	              //id.getSymbol.name + "#" + id.getSymbol.id
-	              value
-	            } catch {
-	              case e: java.lang.RuntimeException => value + "#??"
-	            }
-            } else value
+            try {
+              id.getSymbol.name + "#" + id.getSymbol.id
+            } catch {
+              case e: java.lang.RuntimeException => value + "#??"
+            }
+          } else value
           }
 
           //this
