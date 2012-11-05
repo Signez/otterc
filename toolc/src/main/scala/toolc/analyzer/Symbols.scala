@@ -41,8 +41,8 @@ object Symbols {
     var mainClass: ClassSymbol = _
     var classes: HashMap[String,ClassSymbol] = new HashMap[String,ClassSymbol]
 
-    def lookupClass(n: String): Option[ClassSymbol] = {
-      null
+    def lookupClass(n: String): Option[ClassSymbol] = { 
+	  classes.get(n)
     }
   }
 
@@ -51,13 +51,29 @@ object Symbols {
     var methods = new HashMap[String, MethodSymbol]
     var members = new HashMap[String, VariableSymbol]
 
-    def lookupMethod(n: String): Option[MethodSymbol] = {
-      null
+    def lookupMethod(n: String): Option[MethodSymbol] = {      
+      if (parent.isDefined) {
+		methods.get(n) match {
+		  case ms @ Some(_) => ms
+		  case None => parent.get.lookupMethod(n)   
+	    }
+	  } else {
+	    methods.get(n)
+	  }
     }
+    
     def lookupVar(n: String): Option[VariableSymbol] = {
-      null
+      if (parent.isDefined) {
+		members.get(n) match {
+		  case vs @ Some(_) => vs
+		  case None => parent.get.lookupVar(n)   
+	    }
+	  } else {
+	    members.get(n)
+	  }
     }
   }
+  
 
   class MethodSymbol(val name: String, val classSymbol: ClassSymbol) extends Symbol {
     var params: HashMap[String, VariableSymbol] = new HashMap[String, VariableSymbol]
@@ -66,7 +82,10 @@ object Symbols {
     var argList: List[VariableSymbol] = Nil
 
     def lookupVar(n: String): Option[VariableSymbol] = {
-      null
+      params.get(n) match {
+        case vs @ Some(_) => vs
+        case None => members.get(n)
+      }   
     }
   }
 
