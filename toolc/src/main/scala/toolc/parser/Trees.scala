@@ -21,7 +21,7 @@ object Trees {
   sealed trait Tree extends Positional
 
   case class Program(main: MainObject, classes: List[ClassDecl]) extends Tree
-  case class MainObject(id: Identifier, stat: StatTree) extends Tree
+  case class MainObject(id: Identifier, stat: StatTree) extends Tree with Symbolic[ClassSymbol]
   case class ClassDecl(id: Identifier, extendz: Option[Identifier], 
                               variables: List[VarDecl], methods: List[MethodDecl]) extends Tree with Symbolic[ClassSymbol]
   case class VarDecl(id: Identifier, theType: TypeTree) extends Tree with Symbolic[VariableSymbol]
