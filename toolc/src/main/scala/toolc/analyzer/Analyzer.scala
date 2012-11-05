@@ -23,7 +23,7 @@ trait Analyzer {
     gs.classes ++= prog.classes.map(aClass => {
       val classSymbol = new ClassSymbol(aClass.id.value);
       
-      if(!aClass.extendz.isDefined) {
+      if(aClass.extendz.isDefined) {
       	classSymbol.parent = Some(new ClassSymbol(aClass.extendz.get.value));
       }
       
