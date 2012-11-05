@@ -64,12 +64,16 @@ trait Analyzer {
   }
   
 
-  //go through the parse tree and connects classes, methods and variables instances to their symbols
+  //go through the parse tree and 
+  //- connects classes and variables instances to their declaration
+  //- connects method calls to the method's declaration
+  //- connects "this" to the current class
+  //- connects Class ID's to their class declaration
   private def setSymbols(prog: Program, gs: GlobalScope): Unit = {
     var classSymbol = new ClassSymbol("")
     var methodSymbol = new MethodSymbol("", classSymbol)
     
-    //go through class
+    //go through a statement
     def setSymbolsInStatement(statDecl: StatTree): Unit = {
       statDecl match {
         case Block(stats) => stats.foreach(setSymbolsInStatement(_)) 
@@ -86,12 +90,13 @@ trait Analyzer {
         case PrintLn(expr) =>
           setSymbolsInExpression(expr)
         case assign @ Assignment(id, expr) =>
-          setSymbolsToIdentifier(id)
+          setSymbolToIdentifier(id)
           setSymbolsInExpression(expr)
         case _ => sys.error("Unknown Statement discovered!");
       }
     }
     
+    //go through an expression
     def setSymbolsInExpression(exprDecl: ExprTree): Unit = {
       exprDecl match {
         case Plus(lhs, rhs) =>
@@ -126,50 +131,63 @@ trait Analyzer {
         case Not(expr) =>
           setSymbolsInExpression(expr)
         case MethodCall(objectId, methodId, expressions) =>
+          setSymbolsInExpression(objectId)
+          //method defined in class
+          classSymbol.lookupMethod(methodId.value) match {
+	        case Some(vs) => methodId.setSymbol(vs)
+	        case None => sys.error("Unknown Method discovered!");
+	      }
           
         case IntegerLiteral(value) =>
         case StringLiteral(value) =>
         case BooleanLiteral(value) =>
           
         case NewArray(length)  =>
-        case NewObject(objectId)  =>
+        case NewObject(objectId)  => 
+          gs.lookupClass(objectId.value) match {
+            case Some(cs) => objectId.setSymbol(cs)
+            case None => sys.error("Unknown Class discovered!");
+          } 
           
-        case ThisObject() =>
+        case thisO @ ThisObject() => thisO.setSymbol(classSymbol)
           
-        case id @ Identifier(value) => setSymbolsToIdentifier(id)
+        case id @ Identifier(_) => setSymbolToIdentifier(id)
 
         case _ => sys.error("Unknown Expression discovered!");
       }
       
     }
     
-    def setSymbolsToIdentifier(id: Identifier): Unit = {
-      var varSym =
-	    methodSymbol.lookupVar(id.value) match {
-	      case vs @ Some(_) => vs
-	      case None =>
-	        classSymbol.lookupVar(id.value) match {
-	          case ms @ Some(_) => ms
-	          case None =>
-	            
-	        }
-	    }
-      classSymbol.lookupVar(id.value)
+    //search identifier declaration of current identifier
+    def setSymbolToIdentifier(id: Identifier) : Unit = {
+      //identifier defined in method
+	  methodSymbol.lookupVar(id.value) match {
+	    case Some(vs) => id.setSymbol(vs)
+	    case None =>
+	      //identifier defined in class
+	      classSymbol.lookupVar(id.value) match {
+	        case Some(vs) => id.setSymbol(vs)
+	        case None =>
+	          sys.error("Unknown Identifier discovered!");
+	      }
+	  }
     }
     
-    setSymbolsInStatement(prog.main.stat);
+    //go through all classes
     for (classDecl <- prog.classes) {
       classSymbol = 
         gs.lookupClass(classDecl.id.value) match {
           case Some(cS) => cS;
           case None => sys.error("Class ID hasn't been found!");
         }
+      //go through all methods in class
       for (methodDecl <- classDecl.methods) { 
         methodSymbol = 
           classSymbol.lookupMethod(methodDecl.id.value) match {
             case Some(cS) => cS;
             case None => sys.error("Method ID hasn't been found!");
           }
+        //go through all statements
         methodDecl.statements.foreach(setSymbolsInStatement(_));
       }
     }
