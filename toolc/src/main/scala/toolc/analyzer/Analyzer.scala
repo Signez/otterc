@@ -21,7 +21,6 @@ trait Analyzer {
     // Creates the global context that we'll populate in this method
     var gs = new GlobalScope;
     
-    
     val mainClassSymbol = new ClassSymbol(prog.main.id.value);
     
     prog.main.id.setSymbol(mainClassSymbol);
@@ -64,8 +63,13 @@ trait Analyzer {
         
         for(member <- method.variables) {
           if(methodSymbol.members.contains(member.id.value)) {
-            error("Unexpected redeclaration for member variable '" + member.id.value + "' at position " + member.id.posString +
+            error("Unexpected redeclaration for local variable '" + member.id.value + "' at position " + member.id.posString +
             	  " (previously declared at " + methodSymbol.members.get(member.id.value).get.posString + ")" );
+          }
+          
+          if(methodSymbol.params.contains(member.id.value)) {
+            error("Unexpected shadowing local variable declaration '"+ member.id.value + "' at position " + member.id.posString +
+            	 " (shadows parameter declared at " + methodSymbol.params.get(member.id.value).get.posString + ")");
           }
           
           val memberSymbol = new VariableSymbol(member.id.value);
