@@ -35,16 +35,12 @@ trait Analyzer {
       
       val classSymbol = new ClassSymbol(clazz.id.value);
       
-      if(clazz.extendz.isDefined) {
-      	classSymbol.parent = Some(gs.classes.getOrElse(clazz.extendz.get.value,
-      							  new ClassSymbol(clazz.extendz.get.value)));
-      }
-      
       for(method <- clazz.methods) {
         if(classSymbol.methods.contains(method.id.value)) {
           error("Unexpected redeclaration for method '" + method.id.value + "' at position " + method.id.posString +
         	  " (previously declared at " + classSymbol.methods.get(method.id.value).get.posString + ")" );
         }
+        
         
         val methodSymbol = new MethodSymbol(method.id.value, classSymbol);
         
@@ -103,17 +99,31 @@ trait Analyzer {
       gs.classes += clazz.id.value -> classSymbol;
     }
     
-    prog.classes.map(aClass => {
-      val symbol = gs.lookupClass(aClass.id.value).getOrElse(
-    	 sys.error("Unexpected magical apparition of class.")
-      );
+    // Inheritances related stuff
+    prog.classes.map(clazz => {
+      val symbol = gs.lookupClass(clazz.id.value).get;
       
-      if(aClass.extendz.isDefined) {
-      	symbol.parent = Some(gs.classes.getOrElse(aClass.extendz.get.value,
-				   fatalError("Unknown class '" + aClass.extendz.get.value + "' found at position " + aClass.extendz.get.posString)));
+      if(clazz.extendz.isDefined) {
+      	symbol.parent = Some(gs.classes.getOrElse(clazz.extendz.get.value,
+				   fatalError("Unknown class '" + clazz.extendz.get.value + "' found at position " + clazz.extendz.get.posString)));
+      	
+      	def checkForCycles(current: ClassSymbol, encountred: List[ClassSymbol]) {
+      	  symbol.parent match {
+      	    case Some(parent) =>
+      	      if(encountred.contains(parent))
+      	        error("Inheritance graph has cycling ('" + symbol.name + "' extends '" + "' that already extends it).");
+      	      else {
+      	        checkForCycles(parent, current :: encountred);
+      	      }
+      	      
+      	    case None => // Nothing
+      	  }
+      	}
+      	
+      	checkForCycles(symbol, List());
       }
       
-      aClass.setSymbol(symbol);
+      clazz.setSymbol(symbol);
   	});
     
     gs
