@@ -96,7 +96,7 @@ trait Analyzer {
           setSymbolToIdentifier(id)
           setSymbolsInExpression(index)
           setSymbolsInExpression(expr)
-        case _ => sys.error("Unknown Statement discovered!");
+        case _ => sys.error("Unknown Statement at position " + statDecl.posString + " discovered!");
       }
     }
     
@@ -137,10 +137,10 @@ trait Analyzer {
         case MethodCall(objectId, methodId, expressions) =>
           setSymbolsInExpression(objectId)
           //method defined in class
-//          classSymbol.lookupMethod(methodId.value) match {
-//	        case Some(vs) => methodId.setSymbol(vs)
-//	        case None => sys.error("Unknown Method discovered!");
-//	      }
+          classSymbol.lookupMethod(methodId.value) match {
+	        case Some(vs) => methodId.setSymbol(vs)
+	        case None => sys.error("Unknown Method discovered! MethodID = " + methodId.value + " at position " + methodId.posString);
+	      }
           
         case IntegerLiteral(value) =>
         case StringLiteral(value) =>
@@ -150,14 +150,14 @@ trait Analyzer {
         case NewObject(objectId)  => 
           gs.lookupClass(objectId.value) match {
             case Some(cs) => objectId.setSymbol(cs)
-            case None => sys.error("Unknown Class discovered!");
+            case None => sys.error("Unknown Class discovered! ClassID = " + objectId.value + " at position " + objectId.posString);
           } 
           
         case thisO @ ThisObject() => thisO.setSymbol(classSymbol)
           
         case id @ Identifier(_) => setSymbolToIdentifier(id)
 
-        case _ => sys.error("Unknown Expression discovered!");
+        case _ => sys.error("Unknown Expression at position " + exprDecl.posString + " discovered!");
       }
       
     }
@@ -172,7 +172,7 @@ trait Analyzer {
 	      classSymbol.lookupVar(id.value) match {
 	        case Some(vs) => id.setSymbol(vs)
 	        case None =>
-	          sys.error("Unknown Identifier discovered!");
+	          sys.error("Unknown Identifier discovered! IdentifierID = " + id.value + " at position " + id.posString);
 	      }
 	  }
     }
@@ -182,14 +182,14 @@ trait Analyzer {
       classSymbol = 
         gs.lookupClass(classDecl.id.value) match {
           case Some(cS) => cS;
-          case None => sys.error("Class ID hasn't been found!");
+          case None => sys.error("Class ID hasn't been found! ClassID = " + classDecl.id.value + " at position " + classDecl.id.posString);
         }
       //go through all methods in class
       for (methodDecl <- classDecl.methods) { 
         methodSymbol = 
           classSymbol.lookupMethod(methodDecl.id.value) match {
             case Some(cS) => cS;
-            case None => sys.error("Method ID hasn't been found!");
+            case None => sys.error("Method ID hasn't been found! ClassID = " + methodDecl.id.value + " at position " + methodDecl.id.posString);
           }
         //go through all statements
         methodDecl.statements.foreach(setSymbolsInStatement(_));
