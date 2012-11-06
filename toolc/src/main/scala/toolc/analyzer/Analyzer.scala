@@ -14,14 +14,19 @@ trait Analyzer {
     gs
   }
 
+  /**
+   * Collect all symbols that are declared (classes, methods, params, members).
+   */
   private def collectSymbols(prog: Program): GlobalScope = { 
+    // Creates the global context that we'll populate in this method
     var gs = new GlobalScope;
     
-    val symbol = new ClassSymbol(prog.main.id.value);
     
-    prog.main.id.setSymbol(symbol);
+    val mainClassSymbol = new ClassSymbol(prog.main.id.value);
     
-    gs.mainClass = symbol;
+    prog.main.id.setSymbol(mainClassSymbol);
+    
+    gs.mainClass = mainClassSymbol;
     
     gs.classes ++= prog.classes.map(aClass => {
       val classSymbol = new ClassSymbol(aClass.id.value);
@@ -58,6 +63,16 @@ trait Analyzer {
         
         method.id.setSymbol(methodSymbol);
         
+        method.returnType match {
+          case id @ Identifier(value) =>
+            val plop = gs.classes.get(value)
+            plop match {
+              case Some(classSym) => id.setSymbol(classSym)
+              case None => error("Unknown return type '" + value + "' found at position " + id.posString);
+            }
+          case _ => 
+        }
+        
         method.id.value -> methodSymbol
       })
       
@@ -78,82 +93,66 @@ trait Analyzer {
   }
   
 
-  //go through the parse tree and 
-  //- connects classes and variables instances to their declaration
-  //- connects method calls to the method's declaration
-  //- connects "this" to the current class
-  //- connects Class ID's to their class declaration
+  /**
+   * Go through the parse tree and connect leafs to the right symbols.
+   * 
+   * - connects classes and variables instances to their declaration
+   * - connects method calls to the method's declaration
+   * - connects "this" to the current class
+   * - connects Class ID's to their class declaration
+   */
   private def setSymbols(prog: Program, gs: GlobalScope): Unit = {
     var classSymbol = new ClassSymbol("")
     var methodSymbol = new MethodSymbol("", classSymbol)
     
-    //go through a statement
-    def setSymbolsInStatement(statDecl: StatTree): Unit = {
+    /**
+     * Analyze a statement, finding elements that need symbol assignment. 
+     */
+    def setInStat(statDecl: StatTree): Unit = {
       statDecl match {
-        case Block(stats) => stats.foreach(setSymbolsInStatement(_)) 
+        case Block(stats) => stats.foreach(setInStat(_)) 
         case If(condition, then, elze) =>
-          setSymbolsInExpression(condition)
-          setSymbolsInStatement(then)
+          setInExpr(condition)
+          setInStat(then)
           elze match {
-            case Some(e) => setSymbolsInStatement(e)
+            case Some(e) => setInStat(e)
             case None => 
           }
         case While(condition, loop) =>
-          setSymbolsInExpression(condition)
-          setSymbolsInStatement(loop)
+          setInExpr(condition)
+          setInStat(loop)
         case PrintLn(expr) =>
-          setSymbolsInExpression(expr)
-        case assign @ Assignment(id, expr) =>
-          setSymbolToIdentifier(id)
-          setSymbolsInExpression(expr)
+          setInExpr(expr)
+        case Assignment(id, expr) =>
+          setToVariable(id)
+          setInExpr(expr)
         case IndexAssignment(id, index, expr) =>
-          setSymbolToIdentifier(id)
-          setSymbolsInExpression(index)
-          setSymbolsInExpression(expr)
-        case _ => sys.error("Unknown Statement at position " + statDecl.posString + " discovered!");
+          setToVariable(id)
+          setInExpr(index)
+          setInExpr(expr)
       }
     }
     
     //go through an expression
-    def setSymbolsInExpression(exprDecl: ExprTree): Unit = {
+    def setInExpr(exprDecl: ExprTree): Unit = {
       exprDecl match {
-        case Plus(lhs, rhs) =>
-          setSymbolsInExpression(lhs)
-          setSymbolsInExpression(rhs)
-        case Minus(lhs, rhs) =>
-          setSymbolsInExpression(lhs)
-          setSymbolsInExpression(rhs)
-        case Multiply(lhs, rhs) =>
-          setSymbolsInExpression(lhs)
-          setSymbolsInExpression(rhs)
-        case Divide(lhs, rhs) =>
-          setSymbolsInExpression(lhs)
-          setSymbolsInExpression(rhs)
-        case Or(lhs, rhs) =>
-          setSymbolsInExpression(lhs)
-          setSymbolsInExpression(rhs)
-        case And(lhs, rhs) =>
-          setSymbolsInExpression(lhs)
-          setSymbolsInExpression(rhs)
-        case Equals(lhs, rhs) =>
-          setSymbolsInExpression(lhs)
-          setSymbolsInExpression(rhs)
-        case LesserThan(lhs, rhs) =>
-          setSymbolsInExpression(lhs)
-          setSymbolsInExpression(rhs)
-        case Index(lhs, rhs) =>
-          setSymbolsInExpression(lhs)
-          setSymbolsInExpression(rhs)
-        case Length(expr) =>
-          setSymbolsInExpression(expr)
-        case Not(expr) =>
-          setSymbolsInExpression(expr)
+        case Plus(lhs, rhs) => setInExpr(lhs); setInExpr(rhs)
+        case Minus(lhs, rhs) => setInExpr(lhs); setInExpr(rhs)
+        case Multiply(lhs, rhs) => setInExpr(lhs); setInExpr(rhs)
+        case Divide(lhs, rhs) => setInExpr(lhs); setInExpr(rhs)
+        case Or(lhs, rhs) => setInExpr(lhs); setInExpr(rhs)
+        case And(lhs, rhs) => setInExpr(lhs); setInExpr(rhs)
+        case Equals(lhs, rhs) => setInExpr(lhs); setInExpr(rhs)
+        case LesserThan(lhs, rhs) => setInExpr(lhs); setInExpr(rhs)
+        case Index(lhs, rhs) => setInExpr(lhs); setInExpr(rhs)
+        case Length(expr) => setInExpr(expr)
+        case Not(expr) => setInExpr(expr)
         case MethodCall(objectId, methodId, expressions) =>
-          setSymbolsInExpression(objectId)
+          setInExpr(objectId)
           //method defined in class
           classSymbol.lookupMethod(methodId.value) match {
 	        case Some(vs) => methodId.setSymbol(vs)
-	        case None => sys.error("Unknown Method discovered! MethodID = " + methodId.value + " at position " + methodId.posString);
+	        case None => error("Unknown method '" + methodId.value + "' found at position " + methodId.posString);
 	      }
           
         case IntegerLiteral(value) =>
@@ -164,20 +163,20 @@ trait Analyzer {
         case NewObject(objectId)  => 
           gs.lookupClass(objectId.value) match {
             case Some(cs) => objectId.setSymbol(cs)
-            case None => sys.error("Unknown Class discovered! ClassID = " + objectId.value + " at position " + objectId.posString);
+            case None => error("Unknown class '" + objectId.value + "' found at position " + objectId.posString);
           } 
           
         case thisO @ ThisObject() => thisO.setSymbol(classSymbol)
           
-        case id @ Identifier(_) => setSymbolToIdentifier(id)
-
-        case _ => sys.error("Unknown Expression at position " + exprDecl.posString + " discovered!");
+        case id @ Identifier(_) => setToVariable(id)
       }
       
     }
     
-    //search identifier declaration of current identifier
-    def setSymbolToIdentifier(id: Identifier) : Unit = {
+	/**
+	 * Assign the correct symbol to an identifier that represents a variable.
+	 */
+    def setToVariable(id: Identifier) : Unit = {
       //identifier defined in method
 	  methodSymbol.lookupVar(id.value) match {
 	    case Some(vs) => id.setSymbol(vs)
@@ -186,7 +185,7 @@ trait Analyzer {
 	      classSymbol.lookupVar(id.value) match {
 	        case Some(vs) => id.setSymbol(vs)
 	        case None =>
-	          sys.error("Unknown Identifier discovered! IdentifierID = " + id.value + " at position " + id.posString);
+	          sys.error("Unknown variable identifier '" + id.value + "' found at position " + id.posString);
 	      }
 	  }
     }
@@ -196,17 +195,20 @@ trait Analyzer {
       classSymbol = 
         gs.lookupClass(classDecl.id.value) match {
           case Some(cS) => cS;
-          case None => sys.error("Class ID hasn't been found! ClassID = " + classDecl.id.value + " at position " + classDecl.id.posString);
+          case None => sys.error("Unknown class '" + classDecl.id.value + "' at position " + classDecl.id.posString);
         }
       //go through all methods in class
       for (methodDecl <- classDecl.methods) { 
         methodSymbol = 
           classSymbol.lookupMethod(methodDecl.id.value) match {
             case Some(cS) => cS;
-            case None => sys.error("Method ID hasn't been found! ClassID = " + methodDecl.id.value + " at position " + methodDecl.id.posString);
+            case None => sys.error("Unknown method '" + methodDecl.id.value + "' at position " + methodDecl.id.posString);
           }
+        
         //go through all statements
-        methodDecl.statements.foreach(setSymbolsInStatement(_));
+        methodDecl.statements.foreach(setInStat(_));
+        
+        setInExpr(methodDecl.returnExpr);
       }
     }
   }
