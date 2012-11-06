@@ -15,6 +15,16 @@ object TreePrinter {
     def printTree(t: Tree, level: Int): String = {
       val leftWhiteSpace: String = "  " * level
 
+      def printIdValue(id: Identifier) : String = {
+        if(withSymbolIDs) {
+          try {
+            id.getSymbol.name + "#" + id.getSymbol.id
+          } catch {
+            case e: java.lang.RuntimeException => id.value + "#??"
+          }
+        } else id.value
+      }
+      
       val code: String =
         t match {
           //MainObject ( ClassDeclaration )* <EOF>
@@ -26,7 +36,7 @@ object TreePrinter {
 
           //object Identifier { ...
           case MainObject(id, stat) =>
-            return "object " + id.value + " { " + NEWLINE +
+            return "object " + printIdValue(id) + " { " + NEWLINE +
               "  def main(): Unit = { " + NEWLINE +
               printTree(stat, level + 2) +
               "  }" + NEWLINE +
@@ -34,7 +44,7 @@ object TreePrinter {
 
           //class Identifier ( extends Identifier )? { ...
           case ClassDecl(id, extendz, variables, methods) =>
-            val strClass: String = "class " + id.value
+            val strClass: String = "class " + printIdValue(id)
             val strExtendz: String =
               if (extendz.isDefined) " extends " + extendz.get.value else ""
             val strVariables: String =
@@ -46,19 +56,19 @@ object TreePrinter {
 
           //var Identifier : Type ;
           case VarDecl(id, theType) =>
-            return leftWhiteSpace + "var " + id.value + ": " + printTree(theType, 0) + ";" + NEWLINE
+            return leftWhiteSpace + "var " + printIdValue(id) + ": " + printTree(theType, 0) + ";" + NEWLINE
 
           //def Identifier ( ( Identifier : Type ( , Identifier : Type )* )? ) : Type = { ...
           case MethodDecl(id, arguments, returnType, variables, statements, returnExpr) =>
             val strArguments: String =
               (for { argument: VarDecl <- arguments }
-                yield argument match { case VarDecl(id, theType) => id.value + ": " + printTree(theType, 0) }).mkString(", ")
+                yield argument match { case VarDecl(id, theType) => printIdValue(id) + ": " + printTree(theType, 0) }).mkString(", ")
             val strType: String = printTree(returnType, 0)
             val strVariables: String =
               (for { variable: VarDecl <- variables } yield printTree(variable, level + 1)).mkString
             val strStatements: String =
               (for { stat: StatTree <- statements } yield printTree(stat, level + 1)).mkString
-            return leftWhiteSpace + "def " + id.value + "(" + strArguments + ") : " +
+            return leftWhiteSpace + "def " + printIdValue(id) + "(" + strArguments + ") : " +
               strType + " = { " + NEWLINE + strVariables + strStatements +
               leftWhiteSpace * 2 + "return " + printTree(returnExpr, 0) + ";" + NEWLINE +
               leftWhiteSpace + "}" + NEWLINE
@@ -101,11 +111,11 @@ object TreePrinter {
 
           //Identifier = Expression ;
           case Assignment(id, expr) =>
-            return leftWhiteSpace + id.value + " = " + printTree(expr, 0) + ";" + NEWLINE
+            return leftWhiteSpace + printIdValue(id) + " = " + printTree(expr, 0) + ";" + NEWLINE
 
           //Identifier [ Expression ] = Expression ;
           case IndexAssignment(id, index, expr) =>
-            return leftWhiteSpace + id.value + " [" + printTree(index, 0) + "] " + " = " +
+            return leftWhiteSpace + printIdValue(id) + " [" + printTree(index, 0) + "] " + " = " +
               printTree(expr, 0) + ";" + NEWLINE
 
           //Expression ( && | || | == | < | + | - | * | / ) Expression
@@ -128,7 +138,7 @@ object TreePrinter {
           case MethodCall(objectId, methodId, expressions) => {
             val strExpressions =
               (for { expr: ExprTree <- expressions } yield printTree(expr, level + 1)).mkString(", ")
-            return printTree(objectId, 0) + "." + methodId.value + "(" + strExpressions + ")"
+            return printTree(objectId, 0) + "." + printIdValue(methodId) + "(" + strExpressions + ")"
           }
 
           //! Expression
@@ -146,13 +156,7 @@ object TreePrinter {
 
           //Identifier
           case id @ Identifier(value) => {
-            if(withSymbolIDs) {
-            try {
-              id.getSymbol.name + "#" + id.getSymbol.id
-            } catch {
-              case e: java.lang.RuntimeException => value + "#??"
-            }
-          } else value
+            printIdValue(id)
           }
 
           //this
@@ -162,7 +166,7 @@ object TreePrinter {
           case NewArray(length) => "new Int[" + printTree(length, 0) + "]"
 
           //new Identifier ( )
-          case NewObject(objectId) => "new " + objectId.value + "()"
+          case NewObject(objectId) => "new " + printIdValue(objectId) + "()"
 
           case BoolType() => "Bool"
           case IntArrayType() => "Int[]"
