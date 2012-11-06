@@ -10,7 +10,7 @@ trait Analyzer {
   def analyzeSymbols(prog: Program): GlobalScope = {
     val gs = collectSymbols(prog)
     terminateIfErrors
-//    setSymbols(prog, gs)
+    setSymbols(prog, gs)
     gs
   }
 
@@ -92,6 +92,10 @@ trait Analyzer {
         case assign @ Assignment(id, expr) =>
           setSymbolToIdentifier(id)
           setSymbolsInExpression(expr)
+        case IndexAssignment(id, index, expr) =>
+          setSymbolToIdentifier(id)
+          setSymbolsInExpression(index)
+          setSymbolsInExpression(expr)
         case _ => sys.error("Unknown Statement discovered!");
       }
     }
@@ -133,10 +137,10 @@ trait Analyzer {
         case MethodCall(objectId, methodId, expressions) =>
           setSymbolsInExpression(objectId)
           //method defined in class
-          classSymbol.lookupMethod(methodId.value) match {
-	        case Some(vs) => methodId.setSymbol(vs)
-	        case None => sys.error("Unknown Method discovered!");
-	      }
+//          classSymbol.lookupMethod(methodId.value) match {
+//	        case Some(vs) => methodId.setSymbol(vs)
+//	        case None => sys.error("Unknown Method discovered!");
+//	      }
           
         case IntegerLiteral(value) =>
         case StringLiteral(value) =>
