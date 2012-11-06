@@ -84,7 +84,11 @@ object Symbols {
     def lookupVar(n: String): Option[VariableSymbol] = {
       params.get(n) match {
         case vs @ Some(_) => vs
-        case None => members.get(n)
+        case None => 
+          members.get(n) match {
+            case ms @ Some(_) => ms
+            case None => classSymbol.lookupVar(n)
+          }
       }   
     }
   }

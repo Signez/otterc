@@ -79,6 +79,19 @@ trait Analyzer {
       aClass.id.value -> classSymbol;
     })
     
+    prog.classes.map(aClass => {
+      val symbol = gs.lookupClass(aClass.id.value).getOrElse(
+    	 sys.error("Unexpected magical apparition of class.")
+      );
+      
+      if(aClass.extendz.isDefined) {
+      	symbol.parent = Some(gs.classes.getOrElse(aClass.extendz.get.value,
+				   fatalError("Unknown class '" + aClass.extendz.get.value + "' found at position " + aClass.extendz.get.posString)));
+      }
+      
+      aClass.setSymbol(symbol);
+  	});
+    
     gs
   }
   
@@ -175,13 +188,7 @@ trait Analyzer {
       //identifier defined in method
 	  methodSymbol.lookupVar(id.value) match {
 	    case Some(vs) => id.setSymbol(vs)
-	    case None =>
-	      //identifier defined in class
-	      classSymbol.lookupVar(id.value) match {
-	        case Some(vs) => id.setSymbol(vs)
-	        case None =>
-	          sys.error("Unknown variable identifier '" + id.value + "' found at position " + id.posString);
-	      }
+	    case None => error("Unknown variable identifier '" + id.value + "' found at position " + id.posString);
 	  }
     }
     
