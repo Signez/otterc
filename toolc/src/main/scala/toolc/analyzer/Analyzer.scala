@@ -167,7 +167,7 @@ trait Analyzer {
         case StringLiteral(value) =>
         case BooleanLiteral(value) =>
           
-        case NewArray(length)  =>
+        case NewArray(length)  => setInExpr(length)
         case NewObject(objectId)  => 
           gs.lookupClass(objectId.value) match {
             case Some(cs) => objectId.setSymbol(cs)
