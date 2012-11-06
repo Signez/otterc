@@ -31,14 +31,14 @@ trait Analyzer {
       return None;
     }
     
-    def checkForCycles(current: ClassDecl, encountred: List[ClassDecl]) {
+    def checkForCycles(current: ClassDecl, encountred: List[String]) {
         current.extendz match {
           case Some(parent) =>
-            if (encountred.contains(parent))
+            if (encountred.contains(parent.value))
               error("Inheritance graph has cycling ('" + current.id.value + "' extends '" + parent.value + "' that already extends it).");
             else {
               findClassDecl(parent.value) match {
-                case Some(parentClass) => checkForCycles(parentClass, current :: encountred);
+                case Some(parentClass) => checkForCycles(parentClass, current.id.value :: encountred);
                 case None => fatalError("Unknown class '" + parent.value + "' found at position " + parent.posString);
               }
             }
@@ -130,6 +130,11 @@ trait Analyzer {
       }
 
       for(variable <- clazz.variables) {
+        if(classSymbol.members.contains(variable.id.value)) {
+            error("Unexpected member variable redeclaration '" + variable.id.value + "' found at " + variable.posString + 
+                  " (previously declared at '" + classSymbol.members.get(variable.id.value).get.posString + "')");
+        }
+        
         val variableSymbol = new VariableSymbol(variable.id.value);
         
         if(classSymbol.parent.isDefined) {
