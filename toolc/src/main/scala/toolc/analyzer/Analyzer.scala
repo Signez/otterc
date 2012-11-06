@@ -17,115 +17,154 @@ trait Analyzer {
   /**
    * Collect all symbols that are declared (classes, methods, params, members).
    */
-  private def collectSymbols(prog: Program): GlobalScope = { 
+  private def collectSymbols(prog: Program): GlobalScope = {
     // Creates the global context that we'll populate in this method
     var gs = new GlobalScope;
-    
-    val mainClassSymbol = new ClassSymbol(prog.main.id.value);
-    
-    prog.main.id.setSymbol(mainClassSymbol);
-    
-    gs.mainClass = mainClassSymbol;
-    
-    for(clazz <- prog.classes) {
-      if(gs.classes.contains(clazz.id.value)) {
-          error("Unexpected redeclaration for class '" + clazz.id.value + "' at position " + clazz.id.posString +
-        	  " (previously declared at " + gs.classes.get(clazz.id.value).get.posString + ")" );
+
+    var alreadyCollectedClasses = List[ClassDecl]();
+
+    def findClassDecl(needle: String): Option[ClassDecl] = {
+      for (clazz <- prog.classes) {
+        if (needle == clazz.id.value)
+          return Some(clazz);
       }
-      
-      val classSymbol = new ClassSymbol(clazz.id.value);
-      
-      for(method <- clazz.methods) {
-        if(classSymbol.methods.contains(method.id.value)) {
-          error("Unexpected redeclaration for method '" + method.id.value + "' at position " + method.id.posString +
-        	  " (previously declared at " + classSymbol.methods.get(method.id.value).get.posString + ")" );
+      return None;
+    }
+    
+    def checkForCycles(current: ClassDecl, encountred: List[ClassDecl]) {
+        current.extendz match {
+          case Some(parent) =>
+            if (encountred.contains(parent))
+              error("Inheritance graph has cycling ('" + current.id.value + "' extends '" + parent.value + "' that already extends it).");
+            else {
+              findClassDecl(parent.value) match {
+                case Some(parentClass) => checkForCycles(parentClass, current :: encountred);
+                case None => fatalError("Unknown class '" + parent.value + "' found at position " + parent.posString);
+              }
+            }
+
+          case None => // Nothing
         }
-        
-        
+      }
+
+    def collectClass(clazz: ClassDecl): Unit = {
+      if (alreadyCollectedClasses.contains(clazz)) return;
+
+      if (gs.classes.contains(clazz.id.value)) {
+        error("Unexpected redeclaration for class '" + clazz.id.value + "' at position " + clazz.id.posString +
+          " (previously declared at " + gs.classes.get(clazz.id.value).get.posString + ")");
+      }
+
+      val classSymbol = new ClassSymbol(clazz.id.value);
+
+      checkForCycles(clazz, List());
+
+      classSymbol.parent = clazz.extendz match {
+        case Some(parentId) => 
+          // Presence of parent class already checked in cycle inheritance avoiding loop (checkForCycles) 
+          collectClass(findClassDecl(parentId.value).get)
+          Some(gs.classes(parentId.value))
+        case None => None
+      }
+
+      for (method <- clazz.methods) {
+        if (classSymbol.methods.contains(method.id.value)) {
+          error("Unexpected redeclaration for method '" + method.id.value + "' at position " + method.id.posString +
+            " (previously declared at " + classSymbol.methods.get(method.id.value).get.posString + ")");
+        }
+
         val methodSymbol = new MethodSymbol(method.id.value, classSymbol);
-        
-        for(param <- method.arguments) {
-          if(methodSymbol.params.contains(param.id.value)) {
+
+        for (param <- method.arguments) {
+          if (methodSymbol.params.contains(param.id.value)) {
             error("Unexpected redeclaration for parameter '" + param.id.value + "' at position " + param.id.posString +
-            	  " (previously declared at " + methodSymbol.params.get(param.id.value).get.posString + ")" );
+              " (previously declared at " + methodSymbol.params.get(param.id.value).get.posString + ")");
           }
-          
+
           val variableSymbol = new VariableSymbol(param.id.value);
-          
+
+          variableSymbol.setPos(param);
           param.id.setSymbol(variableSymbol);
-          
+
           methodSymbol.params += param.id.value -> variableSymbol;
         }
         
-        for(member <- method.variables) {
-          if(methodSymbol.members.contains(member.id.value)) {
+        if(classSymbol.parent.isDefined) {
+          val pMethod = classSymbol.parent.get.lookupMethod(method.id.value);
+          
+          if(pMethod.isDefined && pMethod.get.params.size != methodSymbol.params.size) {
+            error("Unexpected overriding method '" + methodSymbol.name + "' found at " + method.posString + 
+                  " (overrides parent method declared at '" + pMethod.get.posString + "')");
+          }
+        }
+
+        for (member <- method.variables) {
+          if (methodSymbol.members.contains(member.id.value)) {
             error("Unexpected redeclaration for local variable '" + member.id.value + "' at position " + member.id.posString +
-            	  " (previously declared at " + methodSymbol.members.get(member.id.value).get.posString + ")" );
+              " (previously declared at " + methodSymbol.members.get(member.id.value).get.posString + ")");
           }
-          
-          if(methodSymbol.params.contains(member.id.value)) {
-            error("Unexpected shadowing local variable declaration '"+ member.id.value + "' at position " + member.id.posString +
-            	 " (shadows parameter declared at " + methodSymbol.params.get(member.id.value).get.posString + ")");
+
+          if (methodSymbol.params.contains(member.id.value)) {
+            error("Unexpected shadowing local variable declaration '" + member.id.value + "' at position " + member.id.posString +
+              " (shadows parameter declared at " + methodSymbol.params.get(member.id.value).get.posString + ")");
           }
-          
+
           val memberSymbol = new VariableSymbol(member.id.value);
-          
+
+          memberSymbol.setPos(member);
           member.id.setSymbol(memberSymbol);
-          
+
           methodSymbol.members += member.id.value -> memberSymbol;
         }
-        
+
         methodSymbol.argList ++= method.variables.map(member => {
           val variableSymbol = new VariableSymbol(member.id.value);
-          
+
           variableSymbol;
         })
-        
+
+        methodSymbol.setPos(method);
         method.id.setSymbol(methodSymbol);
-        
+
         classSymbol.methods += method.id.value -> methodSymbol
       }
-      
-      classSymbol.members ++= clazz.variables.map(variable => {
+
+      for(variable <- clazz.variables) {
         val variableSymbol = new VariableSymbol(variable.id.value);
-          
-        variable.id.setSymbol(variableSymbol);
         
-        variable.id.value -> variableSymbol;
-      })
-      
+        if(classSymbol.parent.isDefined) {
+          val pMember = classSymbol.parent.get.lookupVar(variable.id.value);
+          
+          if(pMember.isDefined) {
+            error("Unexpected overriding member '" + variableSymbol.name + "' found at " + variable.posString + 
+                  " (overrides parent member declared at '" + pMember.get.posString + "')");
+          }
+        }
+
+        variableSymbol.setPos(variable);
+        variable.id.setSymbol(variableSymbol);
+
+        classSymbol.members += variable.id.value -> variableSymbol;
+      }
+
+      classSymbol.setPos(clazz);
       clazz.id.setSymbol(classSymbol);
-      
+
+      alreadyCollectedClasses = clazz :: alreadyCollectedClasses;
       gs.classes += clazz.id.value -> classSymbol;
     }
-    
-    // Inheritances related stuff
-    prog.classes.map(clazz => {
-      val symbol = gs.lookupClass(clazz.id.value).get;
-      
-      if(clazz.extendz.isDefined) {
-      	symbol.parent = Some(gs.classes.getOrElse(clazz.extendz.get.value,
-				   fatalError("Unknown class '" + clazz.extendz.get.value + "' found at position " + clazz.extendz.get.posString)));
-      	
-      	def checkForCycles(current: ClassSymbol, encountred: List[ClassSymbol]) {
-      	  symbol.parent match {
-      	    case Some(parent) =>
-      	      if(encountred.contains(parent))
-      	        error("Inheritance graph has cycling ('" + symbol.name + "' extends '" + "' that already extends it).");
-      	      else {
-      	        checkForCycles(parent, current :: encountred);
-      	      }
-      	      
-      	    case None => // Nothing
-      	  }
-      	}
-      	
-      	checkForCycles(symbol, List());
-      }
-      
-      clazz.setSymbol(symbol);
-  	});
-    
+
+    val mainClassSymbol = new ClassSymbol(prog.main.id.value);
+
+    mainClassSymbol.setPos(prog.main);
+    prog.main.id.setSymbol(mainClassSymbol);
+
+    gs.mainClass = mainClassSymbol;
+
+    for (clazz <- prog.classes) {
+      collectClass(clazz);
+    }
+
     gs
   }
   
