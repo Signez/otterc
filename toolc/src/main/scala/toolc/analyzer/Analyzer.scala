@@ -18,13 +18,17 @@ trait Analyzer {
     var gs = new GlobalScope;
     
     val symbol = new ClassSymbol(prog.main.id.value);
+    
+    prog.main.id.setSymbol(symbol);
+    
     gs.mainClass = symbol;
     
     gs.classes ++= prog.classes.map(aClass => {
       val classSymbol = new ClassSymbol(aClass.id.value);
       
       if(aClass.extendz.isDefined) {
-      	classSymbol.parent = Some(new ClassSymbol(aClass.extendz.get.value));
+      	classSymbol.parent = Some(gs.classes.getOrElse(aClass.extendz.get.value,
+      							  new ClassSymbol(aClass.extendz.get.value)));
       }
       
       classSymbol.methods ++= aClass.methods.map(method => {
@@ -33,13 +37,17 @@ trait Analyzer {
         methodSymbol.params ++= method.arguments.map(variable => {
           val variableSymbol = new VariableSymbol(variable.id.value);
           
+          variable.id.setSymbol(variableSymbol);
+          
           variable.id.value -> variableSymbol;
         })
         
         methodSymbol.members ++= method.variables.map(member => {
-          val variableSymbol = new VariableSymbol(member.id.value);
+          val memberSymbol = new VariableSymbol(member.id.value);
           
-          member.id.value -> variableSymbol;
+          member.id.setSymbol(memberSymbol);
+          
+          member.id.value -> memberSymbol;
         })
         
         methodSymbol.argList ++= method.variables.map(member => {
@@ -48,14 +56,20 @@ trait Analyzer {
           variableSymbol;
         })
         
+        method.id.setSymbol(methodSymbol);
+        
         method.id.value -> methodSymbol
       })
       
       classSymbol.members ++= aClass.variables.map(variable => {
         val variableSymbol = new VariableSymbol(variable.id.value);
           
+        variable.id.setSymbol(variableSymbol);
+        
         variable.id.value -> variableSymbol;
       })
+      
+      aClass.id.setSymbol(classSymbol);
       
       aClass.id.value -> classSymbol;
     })
