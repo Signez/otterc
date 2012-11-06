@@ -140,11 +140,14 @@ trait Analyzer {
         case Not(expr) => setInExpr(expr)
         case MethodCall(objectId, methodId, expressions) =>
           setInExpr(objectId)
-          //method defined in class
-          classSymbol.lookupMethod(methodId.value) match {
-	        case Some(vs) => methodId.setSymbol(vs)
-	        case None => error("Unknown method '" + methodId.value + "' found at position " + methodId.posString);
-	      }
+          
+          // Beware : these lines are commented out, and it's expected
+          //          We can't associate yet method calls with right methods 
+          
+          //classSymbol.lookupMethod(methodId.value) match {
+	      //  case Some(vs) => methodId.setSymbol(vs)
+	      //  case None => error("Unknown method '" + methodId.value + "' found at position " + methodId.posString);
+	      //}
           expressions.map(expr => setInExpr(expr))
           
         case IntegerLiteral(value) =>
