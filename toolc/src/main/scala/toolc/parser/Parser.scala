@@ -276,7 +276,7 @@ trait Parser extends Lexer {
         if (currentToken.info == ELSE) {
           readToken
           new Some[StatTree](parseStatement)
-        } else null
+        } else None
       return new If(expr, stat, elseStat)
       
     // | while ( expr ) statmt
