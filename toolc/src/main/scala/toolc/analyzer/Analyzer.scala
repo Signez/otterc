@@ -92,8 +92,9 @@ trait Analyzer {
    * - connects Class ID's to their class declaration
    */
   private def setSymbols(prog: Program, gs: GlobalScope): Unit = {
-    var classSymbol = new ClassSymbol("")
-    var methodSymbol = new MethodSymbol("", classSymbol)
+    // Initializing context for closures methods "setInStat", "setInExpr", etc.
+    var classSymbol : ClassSymbol = null;
+    var methodSymbol : MethodSymbol = null;
     
     /**
      * Analyze a statement, finding elements that need symbol assignment. 
@@ -220,9 +221,10 @@ trait Analyzer {
           }
         })
         
-        //go through all statements
+        // Analyzing method statements
         methodDecl.statements.foreach(setInStat(_));
         
+        // Analyzing return type
         methodDecl.returnType match {
           case id @ Identifier(value) =>
             gs.lookupClass(value) match {
@@ -236,6 +238,8 @@ trait Analyzer {
       }
     }
     
+    classSymbol = gs.mainClass;
+    methodSymbol = new MethodSymbol("main", classSymbol); // Fake and empty method for main
     setInStat(prog.main.stat);
   }
 }
