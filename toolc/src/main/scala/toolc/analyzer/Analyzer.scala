@@ -10,7 +10,7 @@ trait Analyzer {
   def analyzeSymbols(prog: Program): GlobalScope = {
     val gs = collectSymbols(prog)
     terminateIfErrors
-    setSymbols(prog, gs)
+//    setSymbols(prog, gs)
     gs
   }
 
