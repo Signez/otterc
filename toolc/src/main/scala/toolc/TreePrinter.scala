@@ -115,7 +115,7 @@ object TreePrinter {
 
           //Identifier [ Expression ] = Expression ;
           case IndexAssignment(id, index, expr) =>
-            return leftWhiteSpace + printIdValue(id) + " [" + printTree(index, 0) + "] " + " = " +
+            return leftWhiteSpace + printIdValue(id) + "[" + printTree(index, 0) + "] = " +
               printTree(expr, 0) + ";" + NEWLINE
 
           //Expression ( && | || | == | < | + | - | * | / ) Expression
