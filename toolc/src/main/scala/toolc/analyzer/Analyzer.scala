@@ -28,32 +28,52 @@ trait Analyzer {
     
     gs.mainClass = mainClassSymbol;
     
-    gs.classes ++= prog.classes.map(aClass => {
-      val classSymbol = new ClassSymbol(aClass.id.value);
-      
-      if(aClass.extendz.isDefined) {
-      	classSymbol.parent = Some(gs.classes.getOrElse(aClass.extendz.get.value,
-      							  new ClassSymbol(aClass.extendz.get.value)));
+    for(clazz <- prog.classes) {
+      if(gs.classes.contains(clazz.id.value)) {
+          error("Unexpected redeclaration for class '" + clazz.id.value + "' at position " + clazz.id.posString +
+        	  " (previously declared at " + gs.classes.get(clazz.id.value).get.posString + ")" );
       }
       
-      classSymbol.methods ++= aClass.methods.map(method => {
+      val classSymbol = new ClassSymbol(clazz.id.value);
+      
+      if(clazz.extendz.isDefined) {
+      	classSymbol.parent = Some(gs.classes.getOrElse(clazz.extendz.get.value,
+      							  new ClassSymbol(clazz.extendz.get.value)));
+      }
+      
+      for(method <- clazz.methods) {
+        if(classSymbol.methods.contains(method.id.value)) {
+          error("Unexpected redeclaration for method '" + method.id.value + "' at position " + method.id.posString +
+        	  " (previously declared at " + classSymbol.methods.get(method.id.value).get.posString + ")" );
+        }
+        
         val methodSymbol = new MethodSymbol(method.id.value, classSymbol);
         
-        methodSymbol.params ++= method.arguments.map(variable => {
-          val variableSymbol = new VariableSymbol(variable.id.value);
+        for(param <- method.arguments) {
+          if(methodSymbol.params.contains(param.id.value)) {
+            error("Unexpected redeclaration for parameter '" + param.id.value + "' at position " + param.id.posString +
+            	  " (previously declared at " + methodSymbol.params.get(param.id.value).get.posString + ")" );
+          }
           
-          variable.id.setSymbol(variableSymbol);
+          val variableSymbol = new VariableSymbol(param.id.value);
           
-          variable.id.value -> variableSymbol;
-        })
+          param.id.setSymbol(variableSymbol);
+          
+          methodSymbol.params += param.id.value -> variableSymbol;
+        }
         
-        methodSymbol.members ++= method.variables.map(member => {
+        for(member <- method.variables) {
+          if(methodSymbol.members.contains(member.id.value)) {
+            error("Unexpected redeclaration for member variable '" + member.id.value + "' at position " + member.id.posString +
+            	  " (previously declared at " + methodSymbol.members.get(member.id.value).get.posString + ")" );
+          }
+          
           val memberSymbol = new VariableSymbol(member.id.value);
           
           member.id.setSymbol(memberSymbol);
           
-          member.id.value -> memberSymbol;
-        })
+          methodSymbol.members += member.id.value -> memberSymbol;
+        }
         
         methodSymbol.argList ++= method.variables.map(member => {
           val variableSymbol = new VariableSymbol(member.id.value);
@@ -63,10 +83,10 @@ trait Analyzer {
         
         method.id.setSymbol(methodSymbol);
         
-        method.id.value -> methodSymbol
-      })
+        classSymbol.methods += method.id.value -> methodSymbol
+      }
       
-      classSymbol.members ++= aClass.variables.map(variable => {
+      classSymbol.members ++= clazz.variables.map(variable => {
         val variableSymbol = new VariableSymbol(variable.id.value);
           
         variable.id.setSymbol(variableSymbol);
@@ -74,10 +94,10 @@ trait Analyzer {
         variable.id.value -> variableSymbol;
       })
       
-      aClass.id.setSymbol(classSymbol);
+      clazz.id.setSymbol(classSymbol);
       
-      aClass.id.value -> classSymbol;
-    })
+      gs.classes += clazz.id.value -> classSymbol;
+    }
     
     prog.classes.map(aClass => {
       val symbol = gs.lookupClass(aClass.id.value).getOrElse(
