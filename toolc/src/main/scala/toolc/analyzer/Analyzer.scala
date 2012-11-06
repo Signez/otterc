@@ -51,8 +51,12 @@ trait Analyzer {
       if (alreadyCollectedClasses.contains(clazz)) return;
 
       if (gs.classes.contains(clazz.id.value)) {
-        error("Unexpected redeclaration for class '" + clazz.id.value + "' at position " + clazz.id.posString +
+        error("Unexpected redeclaration for class '" + clazz.id.value + "' at position " + clazz.posString +
           " (previously declared at " + gs.classes.get(clazz.id.value).get.posString + ")");
+      }
+      
+      if (gs.mainClass.name == clazz.id.value) {
+        error("Unexpected class '" + clazz.id.value + "' with the same name as the Main object, at position " + clazz.posString);
       }
 
       val classSymbol = new ClassSymbol(clazz.id.value);
@@ -69,7 +73,7 @@ trait Analyzer {
 
       for (method <- clazz.methods) {
         if (classSymbol.methods.contains(method.id.value)) {
-          error("Unexpected redeclaration for method '" + method.id.value + "' at position " + method.id.posString +
+          error("Unexpected redeclaration for method '" + method.id.value + "' at position " + method.posString +
             " (previously declared at " + classSymbol.methods.get(method.id.value).get.posString + ")");
         }
 
@@ -77,7 +81,7 @@ trait Analyzer {
 
         for (param <- method.arguments) {
           if (methodSymbol.params.contains(param.id.value)) {
-            error("Unexpected redeclaration for parameter '" + param.id.value + "' at position " + param.id.posString +
+            error("Unexpected redeclaration for parameter '" + param.id.value + "' at position " + param.posString +
               " (previously declared at " + methodSymbol.params.get(param.id.value).get.posString + ")");
           }
 
@@ -94,18 +98,18 @@ trait Analyzer {
           
           if(pMethod.isDefined && pMethod.get.params.size != methodSymbol.params.size) {
             error("Unexpected overriding method '" + methodSymbol.name + "' found at " + method.posString + 
-                  " (overrides parent method declared at '" + pMethod.get.posString + "')");
+                  " (overrides parent method declared at '" + pMethod.get.posString + "' with wrong number of params)");
           }
         }
 
         for (member <- method.variables) {
           if (methodSymbol.members.contains(member.id.value)) {
-            error("Unexpected redeclaration for local variable '" + member.id.value + "' at position " + member.id.posString +
+            error("Unexpected redeclaration for local variable '" + member.id.value + "' at position " + member.posString +
               " (previously declared at " + methodSymbol.members.get(member.id.value).get.posString + ")");
           }
 
           if (methodSymbol.params.contains(member.id.value)) {
-            error("Unexpected shadowing local variable declaration '" + member.id.value + "' at position " + member.id.posString +
+            error("Unexpected shadowing local variable declaration '" + member.id.value + "' at position " + member.posString +
               " (shadows parameter declared at " + methodSymbol.params.get(member.id.value).get.posString + ")");
           }
 
