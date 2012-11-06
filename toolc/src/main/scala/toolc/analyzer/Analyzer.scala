@@ -63,16 +63,6 @@ trait Analyzer {
         
         method.id.setSymbol(methodSymbol);
         
-        method.returnType match {
-          case id @ Identifier(value) =>
-            val plop = gs.classes.get(value)
-            plop match {
-              case Some(classSym) => id.setSymbol(classSym)
-              case None => error("Unknown return type '" + value + "' found at position " + id.posString);
-            }
-          case _ => 
-        }
-        
         method.id.value -> methodSymbol
       })
       
@@ -154,6 +144,7 @@ trait Analyzer {
 	        case Some(vs) => methodId.setSymbol(vs)
 	        case None => error("Unknown method '" + methodId.value + "' found at position " + methodId.posString);
 	      }
+          expressions.map(expr => setInExpr(expr))
           
         case IntegerLiteral(value) =>
         case StringLiteral(value) =>
@@ -205,11 +196,46 @@ trait Analyzer {
             case None => sys.error("Unknown method '" + methodDecl.id.value + "' at position " + methodDecl.id.posString);
           }
         
+        // Analyzing types in members (variables)
+        methodDecl.variables.map(variable => {
+          variable.theType match {
+	          case id @ Identifier(value) =>
+	            gs.lookupClass(value) match {
+	              case Some(classSym) => id.setSymbol(classSym);
+	              case None => error("Unknown type '" + value + "' found at position " + id.posString);
+	            }
+	          case _ =>
+          }
+        })
+        
+        // Analyzing types in arguments
+        methodDecl.arguments.map(param => {
+          param.theType match {
+	          case id @ Identifier(value) =>
+	            gs.lookupClass(value) match {
+	              case Some(classSym) => id.setSymbol(classSym);
+	              case None => error("Unknown type '" + value + "' found at position " + id.posString);
+	            }
+	          case _ =>
+          }
+        })
+        
         //go through all statements
         methodDecl.statements.foreach(setInStat(_));
+        
+        methodDecl.returnType match {
+          case id @ Identifier(value) =>
+            gs.lookupClass(value) match {
+              case Some(classSym) => id.setSymbol(classSym)
+              case None => error("Unknown return type '" + value + "' found at position " + id.posString);
+            }
+          case _ => 
+        }
         
         setInExpr(methodDecl.returnExpr);
       }
     }
+    
+    setInStat(prog.main.stat);
   }
 }
