@@ -17,21 +17,57 @@ object Types {
 
   // the default type for all Typed objects
   case object TUntyped extends Type {
-    override def isSubTypeOf(tpe: Type): Boolean = /* ... */
+    override def isSubTypeOf(tpe: Type): Boolean = true
     override def toString = "[untyped]"
   }
 
+  case object TIntArray extends Type {
+    override def isSubTypeOf(tpe: Type): Boolean =
+      tpe match {
+        case TIntArray => true
+        case _ => false
+      }
+    override def toString = "int[]"
+  }
+  
   case object TInt extends Type {
-    override def isSubTypeOf(tpe: Type): Boolean = /* ... */
+    override def isSubTypeOf(tpe: Type): Boolean =
+      tpe match {
+        case TInt => true
+        case _ => false
+      }
     override def toString = "int"
   }
 
-  /* ... */
+  case object TString extends Type {
+    override def isSubTypeOf(tpe: Type): Boolean =
+      tpe match {
+        case TString => true
+        case _ => false
+      }
+    override def toString = "string"
+  }
+  
+  case object TBoolean extends Type {
+    override def isSubTypeOf(tpe: Type): Boolean =
+      tpe match {
+        case TBoolean => true
+        case _ => false
+      }
+    override def toString = "boolean"
+  }
 
   // It's convenient to reference classes by their symbol, rather than by their name, to avoid doing the lookup every time.
   case class TObject(classSymbol: ClassSymbol) extends Type {
-    override def isSubTypeOf(tpe: Type): Boolean = /* ... */
-    override def toString = /* ... */
+    override def isSubTypeOf(tpe: Type): Boolean =
+    	tpe match {
+    		case TObject(targetSymbol) => (targetSymbol == classSymbol 
+    		                              || (targetSymbol.parent.isDefined && 
+    		      	 					      new TObject(targetSymbol.parent.get).isSubTypeOf(tpe)))
+    		  	
+    		case _ => false
+    	}
+    override def toString = classSymbol.name
   }
 
   // special object to implement the fact that all objects are its subclasses.

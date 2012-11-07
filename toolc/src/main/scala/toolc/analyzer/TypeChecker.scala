@@ -19,7 +19,28 @@ trait TypeChecker {
      * type despite the error is a way to do error recovering: type checking
      * will continue, assuming the correct type was found. */
     def tcExpr(expr: ExprTree, exp: Type*): Type = {
-      // make sure you attach symbols to method calls in the process!
+      val computedType : Type = expr match {
+		 case Plus(lhs, rhs) => {
+			 (lhs.getType, rhs.getType) match {
+			   case (TInt, TInt) => TInt
+			   case (TString, TInt) => TString
+			   case (TInt, TString) => TString
+			   case (TString, TString) => TString
+			   case _ => 
+			     error("Unexpected types " + lhs.getType + " and " + rhs.getType + " for Addition," +
+			   				   "expecting int and string, at position " + expr.posString)
+			   	 TString
+			 }
+		 } 
+		 case _ => TUntyped
+	  }
+      
+      if(exp.toList.contains(computedType))
+    	computedType;
+      else {
+        error("Unexpected " + computedType + ", expecting " + exp.toList.mkString(" or ") + " at position " + expr.posString)
+        exp.toList.head
+      }
     }
 
     /** for statements... */

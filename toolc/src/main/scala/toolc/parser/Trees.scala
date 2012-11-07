@@ -3,6 +3,7 @@ package parser
 
 object Trees {
   import analyzer.Symbols._
+  import analyzer.Types._
 
   /*
    * Mix the Symbolic trait within the classes representing program parts that
@@ -46,7 +47,7 @@ object Trees {
   case class Assignment(id: Identifier, expr: ExprTree) extends StatTree                          // id = expr;
   case class IndexAssignment(id: Identifier, index: ExprTree, expr: ExprTree) extends StatTree    // id[index] = expr;
 
-  sealed trait ExprTree extends Tree
+  sealed trait ExprTree extends Tree with Typed
 
   case class Plus(lhs: ExprTree, rhs: ExprTree) extends ExprTree               // lhs + rhs
   case class Minus(lhs: ExprTree, rhs: ExprTree) extends ExprTree              // lhs - rhs

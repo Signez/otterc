@@ -2,6 +2,7 @@ package toolc
 package analyzer
 
 import scala.collection.mutable.HashMap
+import toolc.analyzer.Types.Typed
 
 object Symbols {
   /** A trait for anything that refers to a symbol. */
@@ -75,7 +76,7 @@ object Symbols {
   }
   
 
-  class MethodSymbol(val name: String, val classSymbol: ClassSymbol) extends Symbol {
+  class MethodSymbol(val name: String, val classSymbol: ClassSymbol) extends Symbol with Typed {
     var params: HashMap[String, VariableSymbol] = new HashMap[String, VariableSymbol]
     var members: HashMap[String, VariableSymbol] = new HashMap[String, VariableSymbol]
     // should contain the same values as the params map, but in the right order.
@@ -93,5 +94,5 @@ object Symbols {
     }
   }
 
-  class VariableSymbol(val name: String) extends Symbol
+  class VariableSymbol(val name: String) extends Symbol with Typed
 }
