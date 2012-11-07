@@ -4,7 +4,14 @@ import scala.io.Source
 import parser.Parser
 import analyzer.Analyzer
 
-class Compiler(val fileName: String) extends Reporter with Parser with Analyzer {
+import analyzer.TypeChecker
+
+class Compiler(val fileName: String)
+  extends Reporter
+  with Parser
+  with Analyzer
+  with TypeChecker {
+
   import lexer.Tokens._
 
   val source: Source = Source.fromFile(fileName).withPositioning(true)
@@ -26,6 +33,10 @@ class Compiler(val fileName: String) extends Reporter with Parser with Analyzer 
 
     // Name analysis
     val global: GlobalScope = analyzeSymbols(mainProg)
+    terminateIfErrors
+
+    // Type checking
+    typeCheck(mainProg, global)
     terminateIfErrors
 
     // Pretty-printing with symbols
