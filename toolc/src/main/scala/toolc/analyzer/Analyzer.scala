@@ -48,7 +48,7 @@ trait Analyzer {
       }
 
     def collectClass(clazz: ClassDecl): Unit = {
-      if (alreadyCollectedClasses.contains(clazz)) return;
+      if (alreadyCollectedClasses.exists(_ eq clazz)) return;
 
       if (gs.classes.contains(clazz.id.value)) {
         error("Unexpected redeclaration for class '" + clazz.id.value + "' at position " + clazz.posString +
