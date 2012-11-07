@@ -20,10 +20,20 @@ object Types {
     override def isSubTypeOf(tpe: Type): Boolean = true
     override def toString = "[untyped]"
   }
+  
+  // Is subtype of everything
+  case object TAny extends Type {
+    override def isSubTypeOf(tpe: Type): Boolean = tpe match {
+      case TAny => true
+      case _ => false
+    }
+    override def toString = "[any]"
+  }
 
   case object TIntArray extends Type {
     override def isSubTypeOf(tpe: Type): Boolean =
       tpe match {
+        case TAny => true
         case TIntArray => true
         case _ => false
       }
@@ -33,6 +43,7 @@ object Types {
   case object TInt extends Type {
     override def isSubTypeOf(tpe: Type): Boolean =
       tpe match {
+        case TAny => true
         case TInt => true
         case _ => false
       }
@@ -42,6 +53,7 @@ object Types {
   case object TString extends Type {
     override def isSubTypeOf(tpe: Type): Boolean =
       tpe match {
+        case TAny => true
         case TString => true
         case _ => false
       }
@@ -51,6 +63,7 @@ object Types {
   case object TBoolean extends Type {
     override def isSubTypeOf(tpe: Type): Boolean =
       tpe match {
+        case TAny => true
         case TBoolean => true
         case _ => false
       }
@@ -61,6 +74,8 @@ object Types {
   case class TObject(classSymbol: ClassSymbol) extends Type {
     override def isSubTypeOf(tpe: Type): Boolean =
     	tpe match {
+        	case TAny => true
+    		case TObject(any) if any == anyObject => true
     		case TObject(targetSymbol) => (targetSymbol == classSymbol 
     		                              || (targetSymbol.parent.isDefined && 
     		      	 					      new TObject(targetSymbol.parent.get).isSubTypeOf(tpe)))
