@@ -6,6 +6,7 @@ trait Analyzer {
 
   import parser.Trees._
   import Symbols._
+  import Types._
 
   def analyzeSymbols(prog: Program): GlobalScope = {
     val gs = collectSymbols(prog)
@@ -86,7 +87,7 @@ trait Analyzer {
           }
 
           val variableSymbol = new VariableSymbol(param.id.value);
-
+          
           variableSymbol.setPos(param);
           param.id.setSymbol(variableSymbol);
 
@@ -191,6 +192,21 @@ trait Analyzer {
     var classSymbol : ClassSymbol = null;
     var methodSymbol : MethodSymbol = null;
     
+    
+    def createType(typeT: TypeTree): Type = {
+      typeT match {
+        case IntType() => TInt
+        case BoolType() => TBoolean
+        case StringType() => TString
+        case IntArrayType() => TIntArray
+        case id @ Identifier(_) => TObject(id.getSymbol.asInstanceOf[ClassSymbol])
+        case _ =>
+          error("Unexpected Type discovered!")
+          null
+      }
+    }
+    
+    
     /**
      * Analyze a statement, finding elements that need symbol assignment. 
      */
@@ -281,6 +297,20 @@ trait Analyzer {
           case Some(cS) => cS;
           case None => sys.error("Unknown class '" + classDecl.id.value + "' at position " + classDecl.id.posString);
         }
+      
+      // Analyzing types in members of class (variables)
+      classDecl.variables.foreach(variable => {
+        variable.theType match {
+            case id @ Identifier(value) =>
+              gs.lookupClass(value) match {
+                case Some(classSym) => id.setSymbol(classSym);
+                case None => error("Unknown type '" + value + "' found at position " + id.posString);
+              }
+            case _ =>
+        }
+        variable.getSymbol.setType(createType(variable.theType));
+      })
+      
       //go through all methods in class
       for (methodDecl <- classDecl.methods) { 
         methodSymbol = 
@@ -290,7 +320,7 @@ trait Analyzer {
           }
         
         // Analyzing types in members (variables)
-        methodDecl.variables.map(variable => {
+        methodDecl.variables.foreach(variable => {
           variable.theType match {
 	          case id @ Identifier(value) =>
 	            gs.lookupClass(value) match {
@@ -299,10 +329,12 @@ trait Analyzer {
 	            }
 	          case _ =>
           }
+          variable.getSymbol.setType(createType(variable.theType));
         })
+       
         
         // Analyzing types in arguments
-        methodDecl.arguments.map(param => {
+        methodDecl.arguments.foreach(param => {
           param.theType match {
 	          case id @ Identifier(value) =>
 	            gs.lookupClass(value) match {
@@ -311,6 +343,7 @@ trait Analyzer {
 	            }
 	          case _ =>
           }
+          param.getSymbol.setType(createType(param.theType));
         })
         
         // Analyzing method statements
@@ -325,6 +358,7 @@ trait Analyzer {
             }
           case _ => 
         }
+        methodDecl.getSymbol.setType(createType(methodDecl.returnType));
         
         setInExpr(methodDecl.returnExpr);
       }
