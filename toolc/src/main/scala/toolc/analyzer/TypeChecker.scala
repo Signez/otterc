@@ -11,6 +11,8 @@ trait TypeChecker {
   /** Typechecking does not produce a value, but has the side effect of
    * attaching types to trees and potentially outputting error messages. */
   def typeCheck(prog: Program, gs: GlobalScope): Unit = {
+    var currentMethod : MethodSymbol = null;
+      
     /** Suggested inner function:
      *
      * Computes the type of an expression. If exp is not empty, checks that
@@ -19,6 +21,8 @@ trait TypeChecker {
      * type despite the error is a way to do error recovering: type checking
      * will continue, assuming the correct type was found. */
     def tcExpr(expr: ExprTree, exp: Type*): Type = {
+      val expList = exp.toList;
+      
       val computedType : Type = expr match {
 		 case Plus(lhs, rhs) => {
 			 (lhs.getType, rhs.getType) match {
@@ -32,22 +36,141 @@ trait TypeChecker {
 			   	 TString
 			 }
 		 } 
-		 case _ => TUntyped
+		 case Minus(lhs, rhs) =>
+			 tcExpr(lhs, TInt) 
+			 tcExpr(rhs, TInt)
+		 
+        case Multiply(lhs, rhs) =>
+			 tcExpr(lhs, TInt) 
+			 tcExpr(rhs, TInt)
+		 
+        case Divide(lhs, rhs) =>
+			 tcExpr(lhs, TInt) 
+			 tcExpr(rhs, TInt)
+		 
+        case Or(lhs, rhs) => 
+			 tcExpr(lhs, TBoolean) 
+			 tcExpr(rhs, TBoolean)
+		
+        case And(lhs, rhs) =>
+			 tcExpr(lhs, TBoolean) 
+			 tcExpr(rhs, TBoolean)
+		
+        case LesserThan(lhs, rhs) =>
+			 tcExpr(lhs, TInt) 
+			 tcExpr(rhs, TInt)
+		
+        case Equals(lhs, rhs) =>
+             if(lhs.getType.isInstanceOf[TObject] && rhs.getType.isInstanceOf[TObject]) 
+               TBoolean
+             else if(lhs.getType == rhs.getType)
+        	   TBoolean
+        	 else {
+        	   error("Unexpected different types around == operator (" + lhs.getType + " and " + rhs.getType + ")" +
+        			 " at position" + expr.posString)
+        	   TError
+        	 }
+        
+        case Index(lhs, rhs) =>
+			 tcExpr(lhs, TIntArray) 
+			 tcExpr(rhs, TInt)
+			 
+        case Length(expr) => 
+			 tcExpr(expr, TIntArray)
+			 
+        case Not(expr) => 
+			 tcExpr(expr, TBoolean)
+			 
+        case MethodCall(objectId, methodId, expressions) =>
+		  objectId.getType match {
+		    case TObject(classSymbol) =>
+		      classSymbol.lookupMethod(methodId.value) match {
+		    	  case Some(ms) => 
+		    	    methodId.setSymbol(ms)
+		    	    
+		    	    for((vs, localExpr) <- ms.argList.zip(expressions)) {
+		    	      tcExpr(localExpr, vs.getType);
+		    	    }
+		    	    
+		    	    ms.getType
+		    	  case None => 
+		    	    error("Unknown method '" + methodId.value + "' (in class '" + classSymbol.name + "') " +
+		    	    	  "called at position " + methodId.posString);
+		    	    TError
+		      }
+		    case _ =>
+		      error("Unexpected method call on a non-object of type " + objectId.getType +
+		      		" at position " + objectId.posString);
+		      TError
+		  }
+          
+        case IntegerLiteral(value) => TInt
+        case StringLiteral(value) => TString
+        case BooleanLiteral(value) => TBoolean
+          
+        case NewArray(length) =>
+          tcExpr(length, TInt)
+          TIntArray
+        
+        case NewObject(objectId)  => 
+          TObject(gs.lookupClass(objectId.value).get)
+          
+        case thisO @ ThisObject() => 
+          if(currentMethod != null) {
+        	 currentMethod.getType
+          } else {
+            error("Using this outside a method at position " + expr.posString);
+            TError
+          }
+          
+        case id @ Identifier(_) => 
+      	  id.getSymbol.asInstanceOf[VariableSymbol].getType
 	  }
       
-      if(exp.toList.contains(computedType))
+      if(expList.exists(expected => computedType.isSubTypeOf(expected))) {
     	computedType;
-      else {
-        error("Unexpected " + computedType + ", expecting " + exp.toList.mkString(" or ") + " at position " + expr.posString)
+      } else {
+        if(computedType != TError) {
+        	error("Unexpected " + computedType + ", expecting " + exp.toList.mkString(" or ") +
+        	      " at position " + expr.posString)
+        }
         exp.toList.head
       }
     }
 
     /** for statements... */
     def tcStat(stat: StatTree): Unit = {
-      /* ... */
+      stat match {
+        case Block(stats) => stats.foreach(tcStat(_)) 
+        case If(condition, then, elze) =>
+          tcExpr(condition, TBoolean)
+          tcStat(then)
+          elze match {
+            case Some(e) => tcStat(e)
+            case None => 
+          }
+        case While(condition, loop) =>
+          tcExpr(condition, TBoolean)
+          tcStat(loop)
+        case PrintLn(expr) =>
+          tcExpr(expr, TString, TInt)
+        case Assignment(id, expr) =>
+          tcExpr(expr, id.getType)
+        case IndexAssignment(id, index, expr) =>
+          tcExpr(id, TIntArray)
+          tcExpr(index, TInt)
+          tcExpr(expr, TInt)
+      }
     }
-
-    /* ... */
+    
+    for(clazz <- prog.classes) {
+      for(method <- clazz.methods) {
+        currentMethod = method.getSymbol;
+        
+        method.statements.foreach(tcStat(_))
+        
+        tcExpr(method.returnExpr, method.getSymbol.getType)
+      }
+    }
   }
 }
