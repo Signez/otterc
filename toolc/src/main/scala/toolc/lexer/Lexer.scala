@@ -231,9 +231,13 @@ trait Lexer {
 			    while(source.hasNext && source.ch != '\n') 
 			      source.next();	    	  
 	    	} else {
-	    	    // Trimming content of the comments until */
-			    while(source.hasNext && !(source.ch == '*' && source.next() == '/')) 
-			      source.next();
+	    	    // Trimming content of the comments until "*/"
+	    		var previous = source.ch;
+	    		source.next();
+			    while(source.hasNext && !(previous == '*' && source.ch == '/')) {
+			      previous = source.ch;
+			      source.next()
+			    }
 			    
 			    if(!source.hasNext) {
 			      error("\n - Unexpected EOF, expecting \"*/\"");
