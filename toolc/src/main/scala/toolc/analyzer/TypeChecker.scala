@@ -31,7 +31,7 @@ trait TypeChecker {
 			   case (TInt, TString) => TString
 			   case (TString, TString) => TString
 			   case _ => 
-			     error("Unexpected types " + lhs.getType + " and " + rhs.getType + " for Addition," +
+			     error("Unexpected types " + lhs.getType + " and " + rhs.getType + " for Addition, " +
 			   				   "expecting int and string, at position " + expr.posString)
 			   	 TString
 			 }
@@ -59,9 +59,10 @@ trait TypeChecker {
         case LesserThan(lhs, rhs) =>
 			 tcExpr(lhs, TInt) 
 			 tcExpr(rhs, TInt)
+			 TBoolean
 		
         case Equals(lhs, rhs) =>
-             if(lhs.getType.isInstanceOf[TObject] && rhs.getType.isInstanceOf[TObject]) 
+             if(lhs.getType.isSubTypeOf(anyObject) && rhs.getType.isSubTypeOf(anyObject)) 
                TBoolean
              else if(lhs.getType == rhs.getType)
         	   TBoolean
@@ -81,11 +82,14 @@ trait TypeChecker {
         case Not(expr) => 
 			 tcExpr(expr, TBoolean)
 			 
-        case MethodCall(objectId, methodId, expressions) =>
-		  objectId.getType match {
+        case MethodCall(objectExpr, methodId, expressions) =>
+          val objType = tcExpr(objectExpr, anyObject)
+          
+		  objType match {
 		    case TObject(classSymbol) =>
 		      classSymbol.lookupMethod(methodId.value) match {
 		    	  case Some(ms) => 
+		    	    // Cosmetic linking
 		    	    methodId.setSymbol(ms)
 		    	    
 		    	    for((vs, localExpr) <- ms.argList.zip(expressions)) {
@@ -99,8 +103,8 @@ trait TypeChecker {
 		    	    TError
 		      }
 		    case _ =>
-		      error("Unexpected method call on a non-object of type " + objectId.getType +
-		      		" at position " + objectId.posString);
+		      error("Unexpected method call on a non-object of type " + objType +
+		      		" at position " + objectExpr.posString);
 		      TError
 		  }
           
@@ -119,7 +123,7 @@ trait TypeChecker {
           if(currentMethod != null) {
         	 currentMethod.getType
           } else {
-            error("Using this outside a method at position " + expr.posString);
+            error("Using `this` keyword outside a method at position " + expr.posString);
             TError
           }
           
