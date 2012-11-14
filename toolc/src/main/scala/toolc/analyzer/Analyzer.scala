@@ -207,7 +207,7 @@ trait Analyzer {
         case IntArrayType() => TIntArray
         case id @ Identifier(_) => TObject(id.getSymbol.asInstanceOf[ClassSymbol])
         case _ =>
-          error("Unexpected Type discovered!")
+          sys.error("Unexpected Type discovered!")
           null
       }
     }

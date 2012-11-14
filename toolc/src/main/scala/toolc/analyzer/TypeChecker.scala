@@ -25,7 +25,9 @@ trait TypeChecker {
       
       val computedType : Type = expr match {
 		 case Plus(lhs, rhs) => {
-			 (lhs.getType, rhs.getType) match {
+		     val lt = tcExpr(lhs, TAny)
+		     val rt = tcExpr(rhs, TAny)
+			 (lt, rt) match {
 			   case (TInt, TInt) => TInt
 			   case (TString, TInt) => TString
 			   case (TInt, TString) => TString
