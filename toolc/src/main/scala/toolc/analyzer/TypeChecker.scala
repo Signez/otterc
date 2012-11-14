@@ -121,7 +121,7 @@ trait TypeChecker {
           
         case thisO @ ThisObject() => 
           if(currentMethod != null) {
-        	 currentMethod.getType
+        	 TObject(currentMethod.classSymbol)
           } else {
             error("Using `this` keyword outside a method at position " + expr.posString);
             TError
