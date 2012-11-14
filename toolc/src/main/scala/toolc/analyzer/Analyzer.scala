@@ -89,6 +89,7 @@ trait Analyzer {
           val variableSymbol = new VariableSymbol(param.id.value);
           
           variableSymbol.setPos(param);
+          param.setSymbol(variableSymbol);
           param.id.setSymbol(variableSymbol);
 
           methodSymbol.params += param.id.value -> variableSymbol;
@@ -117,6 +118,7 @@ trait Analyzer {
           val memberSymbol = new VariableSymbol(member.id.value);
 
           memberSymbol.setPos(member);
+          member.setSymbol(memberSymbol);
           member.id.setSymbol(memberSymbol);
 
           methodSymbol.members += member.id.value -> memberSymbol;
@@ -129,6 +131,7 @@ trait Analyzer {
         })
 
         methodSymbol.setPos(method);
+        method.setSymbol(methodSymbol);
         method.id.setSymbol(methodSymbol);
 
         classSymbol.methods += method.id.value -> methodSymbol
@@ -152,12 +155,14 @@ trait Analyzer {
         }
 
         variableSymbol.setPos(variable);
+        variable.setSymbol(variableSymbol);
         variable.id.setSymbol(variableSymbol);
 
         classSymbol.members += variable.id.value -> variableSymbol;
       }
 
       classSymbol.setPos(clazz);
+      clazz.setSymbol(classSymbol);
       clazz.id.setSymbol(classSymbol);
 
       alreadyCollectedClasses = clazz :: alreadyCollectedClasses;
@@ -167,6 +172,7 @@ trait Analyzer {
     val mainClassSymbol = new ClassSymbol(prog.main.id.value);
 
     mainClassSymbol.setPos(prog.main);
+    prog.main.setSymbol(mainClassSymbol);
     prog.main.id.setSymbol(mainClassSymbol);
 
     gs.mainClass = mainClassSymbol;
