@@ -24,7 +24,7 @@ trait TypeChecker {
       val expList = exp.toList;
       
       val computedType : Type = expr match {
-		 case Plus(lhs, rhs) => {
+		 case Plus(lhs, rhs) =>
 		     val lt = tcExpr(lhs, TAny)
 		     val rt = tcExpr(rhs, TAny)
 			 (lt, rt) match {
@@ -37,7 +37,7 @@ trait TypeChecker {
 			   				   "expecting int and string, at position " + expr.posString)
 			   	 TString
 			 }
-		 } 
+		 
 		 case Minus(lhs, rhs) =>
 			 tcExpr(lhs, TInt) 
 			 tcExpr(rhs, TInt)
@@ -64,13 +64,15 @@ trait TypeChecker {
 			 TBoolean
 		
         case Equals(lhs, rhs) =>
+			 val lt = tcExpr(lhs, TAny);
+			 val rt = tcExpr(rhs, TAny);
              if(lhs.getType.isSubTypeOf(anyObject) && rhs.getType.isSubTypeOf(anyObject)) 
                TBoolean
-             else if(lhs.getType == rhs.getType)
+             else if(lt == rt)
         	   TBoolean
         	 else {
         	   error("Unexpected different types around == operator (" + lhs.getType + " and " + rhs.getType + ")" +
-        			 " at position" + expr.posString)
+        			 " at position " + expr.posString)
         	   TError
         	 }
         
@@ -80,6 +82,7 @@ trait TypeChecker {
 			 
         case Length(expr) => 
 			 tcExpr(expr, TIntArray)
+			 TInt
 			 
         case Not(expr) => 
 			 tcExpr(expr, TBoolean)
@@ -94,7 +97,8 @@ trait TypeChecker {
 		    	    // Cosmetic linking
 		    	    methodId.setSymbol(ms)
 		    	    
-		    	    for((vs, localExpr) <- ms.argList.zip(expressions)) {
+		    	    val args = ms.argList;
+		    	    for((vs, localExpr) <- args.zip(expressions)) {
 		    	      tcExpr(localExpr, vs.getType);
 		    	    }
 		    	    
@@ -137,10 +141,10 @@ trait TypeChecker {
     	computedType;
       } else {
         if(computedType != TError) {
-        	error("Unexpected " + computedType + ", expecting " + exp.toList.mkString(" or ") +
+        	error("Unexpected " + computedType + ", expecting " + expList.mkString(" or ") +
         	      " at position " + expr.posString)
         }
-        exp.toList.head
+        expList.head
       }
     }
 
@@ -178,5 +182,8 @@ trait TypeChecker {
         tcExpr(method.returnExpr, method.getSymbol.getType)
       }
     }
+    
+    currentMethod = new MethodSymbol("main", prog.main.getSymbol);
+    tcStat(prog.main.stat)
   }
 }

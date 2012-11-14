@@ -93,7 +93,10 @@ trait Analyzer {
           param.id.setSymbol(variableSymbol);
 
           methodSymbol.params += param.id.value -> variableSymbol;
+          methodSymbol.argList ::= variableSymbol;
         }
+        
+        methodSymbol.argList = methodSymbol.argList.reverse
         
         if(classSymbol.parent.isDefined) {
           val pMethod = classSymbol.parent.get.lookupMethod(method.id.value);
@@ -123,12 +126,6 @@ trait Analyzer {
 
           methodSymbol.members += member.id.value -> memberSymbol;
         }
-
-        methodSymbol.argList ++= method.variables.map(member => {
-          val variableSymbol = new VariableSymbol(member.id.value);
-
-          variableSymbol;
-        })
 
         methodSymbol.setPos(method);
         method.setSymbol(methodSymbol);

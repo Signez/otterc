@@ -77,8 +77,8 @@ object Types {
         	case TAny => true
         	case `anyObject` => true
     		case TObject(targetSymbol) => (targetSymbol == classSymbol 
-    		                              || (targetSymbol.parent.isDefined && 
-    		      	 					      new TObject(targetSymbol.parent.get).isSubTypeOf(tpe)))
+    		                              || (classSymbol.parent.isDefined && 
+    		      	 					      new TObject(classSymbol.parent.get).isSubTypeOf(tpe)))
     		  	
     		case _ => false
     	}
