@@ -1,6 +1,8 @@
 package toolc
 package parser
 
+import toolc.analyzer.Symbols
+
 object Trees {
   import analyzer.Symbols._
   import analyzer.Types._
@@ -72,5 +74,22 @@ object Trees {
   
   case class ThisObject() extends ExprTree with Symbolic[ClassSymbol]          // this
   
-  case class Identifier(value: String) extends TypeTree with ExprTree with Symbolic[Symbol]		   // id (special case :)
+  case class Identifier(value: String) extends TypeTree with ExprTree with Symbolic[Symbol]	{   // id (special case :)
+    self =>
+      
+    override def setType(tpe: Type): self.type = 
+    	sys.error("Setting a type to an identifier is impossible; use symbols instead.");
+    
+    override def getType: Type = {
+      this.getSymbol match {
+        case ms : MethodSymbol =>
+          ms.getType
+        case vs : VariableSymbol =>
+          vs.getType
+        case _ => 
+          sys.error("Trying to get type from an identifier that is not associated with a symbol.")
+          TUntyped
+      }
+    }
+  }
 }
