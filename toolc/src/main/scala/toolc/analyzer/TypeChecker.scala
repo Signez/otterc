@@ -163,7 +163,7 @@ trait TypeChecker {
           tcExpr(condition, TBoolean)
           tcStat(loop)
         case PrintLn(expr) =>
-          tcExpr(expr, TString, TInt)
+          tcExpr(expr, TString, TInt, TBoolean)
         case Assignment(id, expr) =>
           tcExpr(expr, id.getType)
         case IndexAssignment(id, index, expr) =>
