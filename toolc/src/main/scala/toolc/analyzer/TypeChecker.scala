@@ -177,9 +177,34 @@ trait TypeChecker {
       for(method <- clazz.methods) {
         currentMethod = method.getSymbol;
         
+        if(currentMethod.classSymbol.parent.isDefined) {
+          val parent = currentMethod.classSymbol.parent.get;
+          val parentMethod = parent.lookupMethod(method.id.value)
+          
+          if(parentMethod.isDefined) {
+            
+            // Tests if overridden method has the same return type
+            if(currentMethod.getType != parentMethod.get.getType) {
+              error("Unexpected " + currentMethod.getType + " return type for method '" + method.id.value + "', " +
+            	    "expecting " + parentMethod.get.getType + " (overridden method type) at position " + currentMethod.posString);
+            }
+            
+            // Tests if overridden method has the same parameters type
+            val currentArgs = currentMethod.argList;
+            val parentArgs = parentMethod.get.argList;
+    	    for((carg, parg) <- currentArgs.zip(parentArgs)) {
+    	      if(carg.getType != parg.getType) {
+    	        error("Unexpected " + carg.getType + " type for parameter '" + carg.name + "', " +
+            	      "expecting " + parg.getType + " (like the '" + parg.name + "' parameter in overridden method) " +
+            	      "at position " + carg.posString);
+    	      }
+    	    }
+          }
+        }
+        
         method.statements.foreach(tcStat(_))
         
-        tcExpr(method.returnExpr, method.getSymbol.getType)
+        tcExpr(method.returnExpr, currentMethod.getType)
       }
     }
     
