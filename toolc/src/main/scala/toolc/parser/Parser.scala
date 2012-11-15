@@ -184,7 +184,7 @@ trait Parser extends Lexer {
 		    eat(COLON);
 		    val firstVarType = parseType;
 		    
-		    val arg = new VarDecl(argId, firstVarType);
+		    val arg = new VarDecl(argId, firstVarType).setPos(argId);
 		    arguments = arg :: arguments;
 		  }
 		}
