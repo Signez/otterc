@@ -185,7 +185,8 @@ trait TypeChecker {
             // Tests if overridden method has the same return type
             if(currentMethod.getType != parentMethod.get.getType) {
               error("Unexpected " + currentMethod.getType + " return type for method '" + method.id.value + "', " +
-            	    "expecting " + parentMethod.get.getType + " (overridden method type) at position " + currentMethod.posString);
+            	    "expecting " + parentMethod.get.getType + " (overridden method exact type) " +
+            	    "at position " + currentMethod.posString);
             }
             
             // Tests if overridden method has the same parameters type
@@ -203,12 +204,7 @@ trait TypeChecker {
         
         method.statements.foreach(tcStat(_))
         
-        val returnType = tcExpr(method.returnExpr, currentMethod.getType)
-        
-        if(returnType != currentMethod.getType) {
-          error("Unexpected " + returnType + ", expecting exactly " + currentMethod.getType + " (no subtype allowed) " +
-          		"at position " + method.returnExpr.posString);
-        }
+        tcExpr(method.returnExpr, currentMethod.getType)
       }
     }
     
