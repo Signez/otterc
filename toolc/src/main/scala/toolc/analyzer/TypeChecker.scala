@@ -66,12 +66,12 @@ trait TypeChecker {
         case Equals(lhs, rhs) =>
 			 val lt = tcExpr(lhs, TAny);
 			 val rt = tcExpr(rhs, TAny);
-             if(lhs.getType.isSubTypeOf(anyObject) && rhs.getType.isSubTypeOf(anyObject)) 
+             if(lt.isSubTypeOf(anyObject) && rt.isSubTypeOf(anyObject)) {
                TBoolean
-             else if(lt == rt)
+             }else if(lt == rt) {
         	   TBoolean
-        	 else {
-        	   error("Unexpected different types around == operator (" + lhs.getType + " and " + rhs.getType + ")" +
+             } else {
+        	   error("Unexpected different types around == operator (" + lt + " and " + rt + ")" +
         			 " at position " + expr.posString)
         	   TError
         	 }
@@ -94,7 +94,6 @@ trait TypeChecker {
 		    case TObject(classSymbol) =>
 		      classSymbol.lookupMethod(methodId.value) match {
 		    	  case Some(ms) => 
-		    	    // Cosmetic linking
 		    	    methodId.setSymbol(ms)
 		    	    
 		    	    val args = ms.argList;
@@ -204,7 +203,12 @@ trait TypeChecker {
         
         method.statements.foreach(tcStat(_))
         
-        tcExpr(method.returnExpr, currentMethod.getType)
+        val returnType = tcExpr(method.returnExpr, currentMethod.getType)
+        
+        if(returnType != currentMethod.getType) {
+          error("Unexpected " + returnType + ", expecting exactly " + currentMethod.getType + " (no subtype allowed) " +
+          		"at position " + method.returnExpr.posString);
+        }
       }
     }
     
