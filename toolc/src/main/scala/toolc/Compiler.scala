@@ -5,21 +5,31 @@ import scala.io.Source
 import parser.Parser
 import analyzer.Analyzer
 import analyzer.TypeChecker
+import code.CodeGenerator
 
 class Compiler(val fileName: String)
   extends Reporter
   with Parser
   with Analyzer
-  with TypeChecker {
+  with TypeChecker
+  with CodeGenerator {
 
   import lexer.Tokens._
 
-  val source: Source = Source.fromFile(fileName).withPositioning(true)
+  val file = new File(fileName)
+  val shortName = file.getName
+  val source = Source.fromFile(file).withPositioning(true)
 
-  def compile: Unit = {
+  def compile(classDir: String): Unit = {
     import parser.Trees._
     import analyzer.Symbols._
 
+
+    val outputDir = classDir + "/"
+
+    val checkDir: java.io.File = new java.io.File(outputDir)
+    if(!checkDir.exists) checkDir.mkdir
+    if(!checkDir.isDirectory) fatalError("Cannot find output directory " + outputDir)
 
     // Parsing
     var parsedTree: Option[Tree] = None
@@ -39,7 +49,9 @@ class Compiler(val fileName: String)
     typeCheck(mainProg, global)
     terminateIfErrors
 
-    // Pretty-printing with symbols
-    println(TreePrinter.withSymbolIDs(mainProg))
+    // Create classes
+    mainProg.classes foreach {
+      ct => generateClassFile(shortName,global,ct,outputDir)
+    }
   }
 }
