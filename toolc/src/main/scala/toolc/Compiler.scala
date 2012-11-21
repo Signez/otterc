@@ -3,9 +3,9 @@ package toolc
 import scala.io.Source
 import parser.Parser
 import analyzer.Analyzer
-
 import analyzer.TypeChecker
 import code.CodeGenerator
+import java.io.File
 
 class Compiler(val fileName: String)
   extends Reporter
