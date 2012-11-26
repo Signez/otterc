@@ -19,7 +19,9 @@ trait CodeGenerator {
       t match {
         case TInt => "I"
         case TString => "Ljava/lang/String;"
-//        case 
+        case TBoolean => "Z"
+        case TIntArray => "[I"
+        case TObject(classSymbol) => ""
       }
     }
     
@@ -35,9 +37,13 @@ trait CodeGenerator {
 	  }
     
     for (methodDecl <- ct.methods) {
-      
+   
+      val returnTypeSig = getTypeSignature(methodDecl.getSymbol.getType)
       val methodName = methodDecl.getSymbol.name
-      val mh: MethodHandler = classFile.addMethod("I", methodName, "IZLjava/lang/String;")
+      val paramTypSig = methodDecl.arguments.map(arg=>getTypeSignature(arg.getSymbol.getType)).mkString
+      val methodHandler: MethodHandler = classFile.addMethod(returnTypeSig, methodName, paramTypSig)
+      addOpCode(methodDecl, methodHandler)
+      
     }
     
     // ...
