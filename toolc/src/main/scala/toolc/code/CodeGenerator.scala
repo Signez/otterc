@@ -36,16 +36,21 @@ trait CodeGenerator {
 	    case _ => new ClassFile(ct.id.value, None)
 	  }
     
+    //Source File from which the class file was generated 
+//    classFile.setSourceFile("")
+    
+    for (varDecl <- ct.variables) {
+      classFile.addField(getTypeSignature(varDecl.getSymbol.getType), varDecl.id.value)
+    }
+    
     for (methodDecl <- ct.methods) {
-   
       val returnTypeSig = getTypeSignature(methodDecl.getSymbol.getType)
       val methodName = methodDecl.getSymbol.name
       val paramTypSig = methodDecl.arguments.map(arg=>getTypeSignature(arg.getSymbol.getType)).mkString
       val methodHandler: MethodHandler = classFile.addMethod(returnTypeSig, methodName, paramTypSig)
       addOpCode(methodDecl, methodHandler)
-      
     }
     
-    // ...
+    classFile.writeToFile("./" + ct.getSymbol.name + ".class")
   }
 }
