@@ -29,9 +29,10 @@ trait CodeGenerator {
     def addOpCode(method: MethodDecl, mHandler: MethodHandler): Unit = {
       val ch: CodeHandler = mHandler.codeHandler
       
-      for(variable <- method.variables) {
-        // TODO: Register variables
-      }
+      val varMapping =
+        for {
+          variable <- method.variables
+        } yield (variable.getSymbol -> ch.getFreshVar) 
       
       for(decl <- method.statements) {
         decl match {
