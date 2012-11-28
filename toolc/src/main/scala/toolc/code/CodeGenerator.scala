@@ -28,6 +28,17 @@ trait CodeGenerator {
     
     def addOpCode(method: MethodDecl, mHandler: MethodHandler): Unit = {
       val ch: CodeHandler = mHandler.codeHandler
+      
+      for(variable <- method.variables) {
+        // TODO: Register variables
+      }
+      
+      for(decl <- method.statements) {
+        decl match {
+          // TODO: Add opcodes to ch for every statements
+          case _ =>  
+        }
+      }
     }
     
     
@@ -38,7 +49,7 @@ trait CodeGenerator {
 	  }
     
     //Source File from which the class file was generated 
-//    classFile.setSourceFile("")
+    classFile.setSourceFile("")
     
     for (varDecl <- ct.variables) {
       classFile.addField(getTypeSignature(varDecl.getSymbol.getType), varDecl.id.value)
