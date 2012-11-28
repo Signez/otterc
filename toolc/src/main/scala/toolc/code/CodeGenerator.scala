@@ -47,7 +47,18 @@ trait CodeGenerator {
         stat match {
           // TODO: Add opcodes to ch for every statements
           case If(condition, then, elze) => {
+            val elseLabel = ch.getFreshLabel("elseIf")
+            val endLabel = ch.getFreshLabel("endIf")
             
+            evalExpr(condition, ch)
+            ch << IfNull(elseLabel)
+            evalStat(then, ch)
+            ch << Goto(endLabel) << Label(elseLabel)
+            elze match {
+              case Some(e) => evalStat(e, ch)
+              case None =>
+            }
+            ch << Label(endLabel)
           }
           case Assignment(id, expr) => {
             
