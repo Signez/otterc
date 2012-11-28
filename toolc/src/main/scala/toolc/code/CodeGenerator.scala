@@ -22,6 +22,7 @@ trait CodeGenerator {
         case TBoolean => "Z"
         case TIntArray => "[I"
         case TObject(classSymbol) => ""
+        case _ => sys.error("Can't generate signature for type " + t) // TAny, TUntyped, TError
       }
     }
     
