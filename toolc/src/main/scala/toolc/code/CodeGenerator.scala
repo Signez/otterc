@@ -31,10 +31,62 @@ trait CodeGenerator {
       
       def evalExpr(expr: ExprTree, ch: CodeHandler): Unit = {
         expr match {
-          case Plus(lhs, rhs) => 
+          // lhs + rhs
+          case Plus(lhs, rhs) =>
+            
+          // lhs - rhs
+          case Minus(lhs, rhs) =>              
+            
+          // lhs * rhs
+          case Multiply(lhs, rhs) =>
+            
+          // lhs / rhs
+          case Divide(lhs, rhs) =>
+            
+          // lhs || rhs
+          case Or(lhs, rhs) =>
+            
+          // lhs && rhs
           case And(lhs, rhs) =>
-          case BooleanLiteral(value) => 
-          // ...and all of them
+            
+          // lhs == rhs
+          case Equals(lhs, rhs) =>
+            
+          // lhs < rhs
+          case LesserThan(lhs, rhs) =>
+            
+          // lhs[rhs]
+          case Index(lhs, rhs) =>
+            
+          // expr.length
+          case Length(expr) =>
+            
+          // !expr
+          case Not(expr) =>
+            
+          // objectId.methodId(expressions...)
+          case MethodCall(objectId, methodId, expressions) =>
+            
+          // value (int)
+          case IntegerLiteral(value: Int) =>
+            
+          // "value"
+          case StringLiteral(value: String) =>
+            
+          // value (true or false)
+          case BooleanLiteral(value: Boolean) =>
+            
+          // new Int[length]
+          case toolc.parser.Trees.NewArray(length: ExprTree) =>
+            
+          // new objectId()
+          case NewObject(objectId: Identifier) =>
+            
+          // this
+          case ThisObject() =>
+            
+          // id (special case :)
+          case Identifier(value) => 
         }
       }
       
