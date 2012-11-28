@@ -27,7 +27,7 @@ trait CodeGenerator {
     }
     
     def addOpCode(method: MethodDecl, mHandler: MethodHandler): Unit = {
-      
+      val ch: CodeHandler = mHandler.codeHandler
     }
     
     
