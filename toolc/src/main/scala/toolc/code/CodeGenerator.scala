@@ -28,17 +28,44 @@ trait CodeGenerator {
     
     def addOpCode(method: MethodDecl, mHandler: MethodHandler): Unit = {
       val ch: CodeHandler = mHandler.codeHandler
-      
+
       val varMapping =
         for {
           variable <- method.variables
         } yield (variable.getSymbol -> ch.getFreshVar) 
+
+      def evalExpr(expr: ExprTree, ch: CodeHandler): Unit = {
+        expr match {
+          case Plus(lhs, rhs) => 
+          case And(lhs, rhs) =>
+          case BooleanLiteral(value) => 
+          // ...and all of them
+        }
+      }
+      
+      def evalStat(stat: StatTree, ch: CodeHandler): Unit = {
+        stat match {
+          // TODO: Add opcodes to ch for every statements
+          case If(condition, then, elze) => {
+            
+          }
+          case Assignment(id, expr) => {
+            
+          }
+          case PrintLn(expr) => {
+            
+          }
+          case Block(statements) => {
+            
+          }
+          case IndexAssignment(id, index, expr) => {
+            
+          }
+        }
+      }
       
       for(decl <- method.statements) {
-        decl match {
-          // TODO: Add opcodes to ch for every statements
-          case _ =>  
-        }
+        
       }
     }
     
