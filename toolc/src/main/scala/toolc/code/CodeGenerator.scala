@@ -28,7 +28,12 @@ trait CodeGenerator {
     
     def addOpCode(method: MethodDecl, mHandler: MethodHandler): Unit = {
       val ch: CodeHandler = mHandler.codeHandler
-      
+
+      val varMapping =
+        for {
+          variable <- method.variables
+        } yield (variable.getSymbol -> ch.getFreshVar) 
+
       def evalExpr(expr: ExprTree, ch: CodeHandler): Unit = {
         expr match {
           // lhs + rhs
@@ -109,10 +114,6 @@ trait CodeGenerator {
             
           }
         }
-      }
-      
-      for(variable <- method.variables) {
-        // TODO: Register variables
       }
       
       for(decl <- method.statements) {
