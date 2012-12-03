@@ -239,9 +239,16 @@ trait Lexer {
 			      source.next()
 			    }
 			    
+			    // CORRECTION: what if the file ends with */ and no following
+			    // character. In general, when you have a loop, with two possible
+			    // outcome (valid/exhaustion), check both conditions after the
+			    // loop, not only one case.
 			    if(!source.hasNext) {
-			      error("\n - Unexpected EOF, expecting \"*/\"");
-			      return Token(BAD).setPos(source.pos);
+                  if (previous == '*' && source.ch == '/') return Token(EOF); 
+                  else {
+			        error("\n - Unexpected EOF, expecting \"*/\"");
+			        return Token(BAD).setPos(source.pos);
+			      }
 			    }
 	    	}
 		    
