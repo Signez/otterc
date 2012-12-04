@@ -89,9 +89,9 @@ trait CodeGenerator {
             val endLabel = ch.getFreshLabel("endOr")
             
             evalExpr(lhs)
-            ch << IfNonNull(trueLabel) 
+            ch << IfNe(trueLabel) 
             evalExpr(rhs)
-            ch << IfNonNull(trueLabel) 
+            ch << IfNe(trueLabel) 
             ch << Ldc(0)
             ch << Goto(endLabel)
             
@@ -106,9 +106,9 @@ trait CodeGenerator {
             val endLabel = ch.getFreshLabel("endAnd")
             
             evalExpr(lhs)
-            ch << IfNull(falseLabel) 
+            ch << IfEq(falseLabel) 
             evalExpr(rhs)
-            ch << IfNull(falseLabel) 
+            ch << IfEq(falseLabel) 
             ch << Ldc(1)
             ch << Goto(endLabel)
             
@@ -173,7 +173,7 @@ trait CodeGenerator {
             val endLabel = ch.getFreshLabel("endNot")
             
             evalExpr(expr)
-            ch << IfNonNull(falseLabel)
+            ch << IfNe(falseLabel)
             ch << Ldc(1)
             ch << Goto(endLabel)
             
@@ -267,7 +267,7 @@ trait CodeGenerator {
             val endLabel = ch.getFreshLabel("endIf")
             
             evalExpr(condition)
-            ch << IfNull(elseLabel)
+            ch << IfEq(elseLabel)
             evalStat(then)
             ch << Goto(endLabel) << Label(elseLabel)
             elze match {
@@ -281,12 +281,12 @@ trait CodeGenerator {
             val endLabel = ch.getFreshLabel("endWhile")
             
             evalExpr(condition)
-            ch << IfNull(endLabel)
+            ch << IfEq(endLabel)
             
             ch << Label(loopLabel)
             evalStat(loop)
             evalExpr(condition)
-            ch << IfNull(endLabel)
+            ch << IfEq(endLabel)
             ch << Goto(loopLabel)
             
             ch << Label(endLabel)
