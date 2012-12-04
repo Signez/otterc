@@ -290,24 +290,29 @@ trait CodeGenerator {
             ch << Label(endLabel)
           }
           case Assignment(id, expr) => {
-            evalExpr(expr)
             id.getSymbol match {
               case vs @ VariableSymbol(_) =>
                 vs.parentSymbol match {
                   case cs @ ClassSymbol(_) =>
+                    evalExpr(expr)
                     ch << PutField(classname, id.value, getTypeSignature(id.getType))
                   case ms @ MethodSymbol(_,_) => 
                     vs.getType match {
                       case TInt =>
+                        evalExpr(expr)
                       	ch << IStore(varMapping(vs))
                       case TBoolean =>
+                        evalExpr(expr)
                         ch << IStore(varMapping(vs))
                       case TString =>
-                        ch << ASTORE 
+                        evalExpr(expr)
+                        ch << AStore(varMapping(vs))
                       case TIntArray =>
-                        ch << ASTORE 
+                        evalExpr(expr)
+                        ch << AStore(varMapping(vs))
                       case TObject(_) =>
-                        ch << ASTORE
+                        evalExpr(expr)
+                        ch << AStore(varMapping(vs))
                       case _ =>
                     }
 
