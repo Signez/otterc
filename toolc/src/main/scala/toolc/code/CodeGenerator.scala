@@ -327,19 +327,10 @@ trait CodeGenerator {
           case IndexAssignment(id, index, expr) => {
             id.getSymbol match {
               case vs @ VariableSymbol(_) =>
-                vs.parentSymbol match {
-                  case cs @ ClassSymbol(_) =>
-                    ch << GetField(classname, id.value, getTypeSignature(id.getType))		//"[I"
-                    evalExpr(index)
-                    evalExpr(expr)
-                    ch << IASTORE
-                  case ms @ MethodSymbol(_,_) =>
-                    evalExpr(id)
-                    evalExpr(index)
-                    evalExpr(expr)
-                    ch << IASTORE
-                  case _ =>
-                }
+                evalExpr(id)
+                evalExpr(index)
+                evalExpr(expr)
+                ch << IASTORE
               case _ =>
             }
           }
