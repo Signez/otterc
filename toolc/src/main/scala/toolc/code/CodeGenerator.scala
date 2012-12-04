@@ -297,7 +297,8 @@ trait CodeGenerator {
                 vs.parentSymbol match {
                   case cs @ ClassSymbol(_) =>
                     evalExpr(expr)
-                    ch << PutField(classname, value, getTypeSignature(vs.getType))
+                    ch << ArgLoad(0)
+                    ch << PutField(classname, id.value, getTypeSignature(id.getType))
                   case ms @ MethodSymbol(_,_) => 
                     vs.getType match {
                       case TInt =>
@@ -326,10 +327,20 @@ trait CodeGenerator {
           case IndexAssignment(id, index, expr) => {
             id.getSymbol match {
               case vs @ VariableSymbol(_) =>
-                evalExpr(id)
-                evalExpr(index)
-                evalExpr(expr)
-                ch << IASTORE
+                vs.parentSymbol match {
+                  case cs @ ClassSymbol(_) =>
+                    ch << ArgLoad(0)
+                    ch << GetField(classname, id.value, getTypeSignature(id.getType))		//"[I"
+                    evalExpr(index)
+                    evalExpr(expr)
+                    ch << IASTORE
+                  case ms @ MethodSymbol(_,_) =>
+                    evalExpr(id)
+                    evalExpr(index)
+                    evalExpr(expr)
+                    ch << IASTORE
+                  case _ =>
+                }
               case _ =>
             }
           }
