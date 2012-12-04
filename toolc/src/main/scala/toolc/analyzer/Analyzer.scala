@@ -66,9 +66,11 @@ trait Analyzer {
 
       classSymbol.parent = clazz.extendz match {
         case Some(parentId) => 
-          // Presence of parent class already checked in cycle inheritance avoiding loop (checkForCycles) 
-          collectClass(findClassDecl(parentId.value).get)
-          Some(gs.classes(parentId.value))
+          val parent = findClassDecl(parentId.value).get
+          if (parent != clazz) { // Not parent of itself
+            collectClass(parent)
+            Some(gs.classes(parentId.value))
+          } else None
         case None => None
       }
 

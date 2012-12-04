@@ -240,8 +240,14 @@ trait Lexer {
 			    }
 			    
 			    if(!source.hasNext) {
-			      error("\n - Unexpected EOF, expecting \"*/\"");
-			      return Token(BAD).setPos(source.pos);
+                  if (previous == '*' && source.ch == '/') {
+                    // Multiline comment was the last thing of file (correctly closed)
+                    return Token(EOF).setPos(source.pos); 
+                  } else {
+                    // Un-terminated multiline comment
+			        error("\n - Unexpected EOF, expecting \"*/\"");
+			        return Token(BAD).setPos(source.pos);
+			      }
 			    }
 	    	}
 		    
