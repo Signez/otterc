@@ -387,8 +387,8 @@ trait CodeGenerator {
             ch << Ldc(0)
             ch << AbstractByteCodes.NewArray(10)
             ch << AStore(varMapping(varSymbol))
-		  case TObject(_) =>
-            ch << Ldc(0)
+		  case TObject(classSymbol) =>
+            ch << DefaultNew(classSymbol.name)
             ch << AStore(varMapping(varSymbol))
           case _ =>
         }
