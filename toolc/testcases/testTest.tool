@@ -5,7 +5,10 @@ object testTest {
 }
 
 class aaSomething {
-	def go() : String = {
+	def go(m : Int, s : String) : String = {
+		var i : Int;
+		var j : Int;
+	
 		println("mamma");
 		return "";
 	}

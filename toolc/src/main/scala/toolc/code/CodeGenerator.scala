@@ -123,8 +123,9 @@ trait CodeGenerator {
                 vs.parentSymbol match {
                   case cs @ ClassSymbol(_) =>
                     ch << PutField(classname, id.value, getTypeSignature(id.getType))
-                  case ms @ MethodSymbol(_,_) =>
+                  case ms @ MethodSymbol(_,_) => 
                     //TODO: IStore, LStore, DStore etc
+                    //TODO: store Param with ArgLoad
                     ch << IStore(varMapping(vs))
                   case _ =>
                 }
@@ -208,7 +209,7 @@ trait CodeGenerator {
     for (methodDecl <- ct.methods) {
       val returnTypeSig = getTypeSignature(methodDecl.getSymbol.getType)
       val methodName = methodDecl.getSymbol.name
-      val paramTypSig = methodDecl.arguments.map(arg=>getTypeSignature(arg.getSymbol.getType)).mkString
+      val paramTypSig = methodDecl.arguments.flatMap(arg=>getTypeSignature(arg.getSymbol.getType)).mkString
       val methodHandler: MethodHandler = classFile.addMethod(returnTypeSig, methodName, paramTypSig)
       addOpCode(methodDecl, methodHandler, gs, ct.id.value)
     }
