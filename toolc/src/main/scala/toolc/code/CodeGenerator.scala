@@ -329,6 +329,7 @@ trait CodeGenerator {
               case vs @ VariableSymbol(_) =>
                 vs.parentSymbol match {
                   case cs @ ClassSymbol(_) =>
+                    ch << ArgLoad(0)
                     ch << GetField(classname, id.value, getTypeSignature(id.getType))		//"[I"
                     evalExpr(index)
                     evalExpr(expr)
