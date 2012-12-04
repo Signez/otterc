@@ -321,7 +321,6 @@ trait CodeGenerator {
             }
           }
           case IndexAssignment(id, index, expr) => {
-            evalExpr(expr)
             id.getSymbol match {
               case vs @ VariableSymbol(_) =>
                 vs.parentSymbol match {
@@ -329,12 +328,12 @@ trait CodeGenerator {
                     ch << GetField(classname, id.value, getTypeSignature(id.getType))		//"[I"
                     evalExpr(index)
                     evalExpr(expr)
-                    ch << IASTORE  
+                    ch << IASTORE
                   case ms @ MethodSymbol(_,_) =>
                     ch << ALoad(varMapping(vs))
                     evalExpr(index)
                     evalExpr(expr)
-                    ch << IASTORE  
+                    ch << IASTORE
                   case _ =>
                 }
               case _ =>
