@@ -371,6 +371,31 @@ trait CodeGenerator {
         }
       }
       
+      for(variable <- method.variables) {
+        val varSymbol = variable.getSymbol
+        varSymbol.getType match {
+          case TInt =>
+            ch << Ldc(0)
+          	ch << IStore(varMapping(varSymbol))
+          case TBoolean =>
+            ch << Ldc(0)
+            ch << IStore(varMapping(varSymbol))
+          case _ =>
+        }
+      }
+//      for(arguments <- method.arguments) {
+//        val varSymbol = arguments.getSymbol
+//        varSymbol.getType match {
+//          case TInt =>
+//            ch << Ldc(0)
+//          	ch << IStore(varMapping(varSymbol))
+//          case TBoolean =>
+//            ch << Ldc(0)
+//            ch << IStore(varMapping(varSymbol))
+//          case _ =>
+//        }
+//      }
+      
       for(stat <- method.statements) {
         evalStat(stat)
 	  }
