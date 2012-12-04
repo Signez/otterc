@@ -293,11 +293,11 @@ trait CodeGenerator {
           }
           case Assignment(id, expr) => {
             id.getSymbol match {
-              case vs @ VariableSymbol(_) =>
+              case vs @ VariableSymbol(value) =>
                 vs.parentSymbol match {
                   case cs @ ClassSymbol(_) =>
                     evalExpr(expr)
-                    ch << PutField(classname, id.value, getTypeSignature(id.getType))
+                    ch << PutField(classname, value, getTypeSignature(vs.getType))
                   case ms @ MethodSymbol(_,_) => 
                     vs.getType match {
                       case TInt =>
