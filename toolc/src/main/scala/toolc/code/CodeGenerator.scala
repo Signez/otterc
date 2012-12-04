@@ -23,6 +23,10 @@ trait CodeGenerator {
 	    case _ => sys.error("Can't generate signature for type " + t) // TAny, TUntyped, TError
 	  }
 	}
+  
+    def generateMethodSignature(args: List[ExprTree], returnType: Type): String =  {
+      "(" + (for(arg <- args) yield { getTypeSignature(arg.getType) }).mkString("") + ")" + getTypeSignature(returnType)
+    }
     
     def addOpCode(method: MethodDecl, mHandler: MethodHandler, gs: GlobalScope, classname: String): Unit = {
       val ch: CodeHandler = mHandler.codeHandler
@@ -34,68 +38,220 @@ trait CodeGenerator {
         } yield (variable.getSymbol -> ch.getFreshVar)).toMap
       val paramMapping =
         (for {
-          argument <- method.arguments
-        } yield (argument.getSymbol -> ch.getFreshVar)).toMap
-      val methodVarMapping = varMapping ++ paramMapping
+          (argument, index) <- method.arguments.zipWithIndex
+        } yield (argument.getSymbol -> (index + 1))).toMap
 
       def evalExpr(expr: ExprTree): Unit = {
         expr match {
           // lhs + rhs
           case Plus(lhs, rhs) =>
+            (lhs.getType, rhs.getType) match {
+              case (TInt, TInt) =>
+	            evalExpr(lhs); evalExpr(rhs)
+	            ch << IADD
+	          
+              case lr @ _ =>
+                ch << DefaultNew("java/lang/StringBuilder")
+                evalExpr(lhs)
+                if(lr._1 == TInt) {
+                  ch << InvokeVirtual("java/lang/StringBuilder", "append", "(I)Ljava/lang/StringBuilder;")
+                } else {
+                  ch << InvokeVirtual("java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;")
+                }
+                evalExpr(rhs)
+                if(lr._2 == TInt) {
+                  ch << InvokeVirtual("java/lang/StringBuilder", "append", "(I)Ljava/lang/StringBuilder;")
+                } else {
+                  ch << InvokeVirtual("java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;")
+                }
+                ch << InvokeVirtual("java/lang/StringBuilder", "toString", "()S")
+            }
             
           // lhs - rhs
-          case Minus(lhs, rhs) =>              
+          case Minus(lhs, rhs) =>     
+            evalExpr(lhs); evalExpr(rhs)
+            ch << ISUB         
             
           // lhs * rhs
-          case Multiply(lhs, rhs) =>
+          case Multiply(lhs, rhs) =>   
+            evalExpr(lhs); evalExpr(rhs)
+            ch << IMUL      
             
           // lhs / rhs
-          case Divide(lhs, rhs) =>
+          case Divide(lhs, rhs) => 
+            evalExpr(lhs); evalExpr(rhs)
+            ch << IDIV      
             
           // lhs || rhs
           case Or(lhs, rhs) =>
+            val elseLabel = ch.getFreshLabel("elseOr")
+            val trueLabel = ch.getFreshLabel("trueOr")
+            val endLabel = ch.getFreshLabel("endOr")
+            
+            evalExpr(lhs)
+            ch << IfNonNull(trueLabel) 
+            evalExpr(rhs)
+            ch << IfNonNull(trueLabel) 
+            ch << Ldc(0)
+            ch << Goto(endLabel)
+            
+            ch << Label(trueLabel)
+            ch << Ldc(1)
+            
+            ch << Label(endLabel)
             
           // lhs && rhs
           case And(lhs, rhs) =>
+            val falseLabel = ch.getFreshLabel("falseOr")
+            val endLabel = ch.getFreshLabel("endOr")
+            
+            evalExpr(lhs)
+            ch << IfNull(falseLabel) 
+            evalExpr(rhs)
+            ch << IfNull(falseLabel) 
+            ch << Ldc(1)
+            ch << Goto(endLabel)
+            
+            ch << Label(falseLabel)
+            ch << Ldc(0)
+            
+            ch << Label(endLabel)
             
           // lhs == rhs
           case Equals(lhs, rhs) =>
+            val trueLabel = ch.getFreshLabel("trueOr")
+            val endLabel = ch.getFreshLabel("endOr")
+            evalExpr(lhs)
+            evalExpr(rhs)
+                
+            (lhs.getType, rhs.getType) match {	
+              case (TInt, TInt) | (TBoolean, TBoolean) => 
+	            ch << If_ICmpEq(trueLabel)
+	            
+              case _ =>
+                ch << If_ACmpEq(trueLabel)
+            }
+            ch << Ldc(0)
+            ch << Goto(endLabel)
+            
+            ch << Label(trueLabel)
+            ch << Ldc(1)
+	            
+            ch << Label(endLabel)
             
           // lhs < rhs
           case LesserThan(lhs, rhs) =>
+            val trueLabel = ch.getFreshLabel("trueOr")
+            val endLabel = ch.getFreshLabel("endOr")
+            
+            evalExpr(lhs)
+            evalExpr(rhs)
+            ch << If_ICmpLt(trueLabel)
+            ch << Ldc(0)
+            ch << Goto(endLabel)
+            
+            ch << Label(trueLabel)
+            ch << Ldc(1)
+            
+            ch << Label(endLabel)
+            
             
           // lhs[rhs]
           case Index(lhs, rhs) =>
+            evalExpr(rhs)
+            evalExpr(lhs)
+            ch << IALOAD
             
           // expr.length
           case Length(expr) =>
+            evalExpr(expr)
+            ch << ARRAYLENGTH
             
           // !expr
           case Not(expr) =>
+            val falseLabel = ch.getFreshLabel("falseNot")
+            val endLabel = ch.getFreshLabel("endNot")
+            
+            evalExpr(expr)
+            ch << IfNonNull(falseLabel)
+            ch << Ldc(1)
+            ch << Goto(endLabel)
+            
+            ch << Label(falseLabel)
+            ch << Ldc(0)
+            
+            ch << Label(endLabel)
             
           // objectId.methodId(expressions...)
           case MethodCall(objectId, methodId, expressions) =>
+            evalExpr(objectId)
+            for(arg <- expressions) {
+              evalExpr(arg)
+            }
+            objectId.getType match {
+              case TObject(cs) => {
+                val returnType = methodId.getSymbol.asInstanceOf[MethodSymbol].getType
+                ch << InvokeVirtual(cs.name, methodId.value, generateMethodSignature(expressions, returnType))
+              }
+              case _ => sys.error("Trying to call a method on a non-object in the generating step.")
+            }
             
           // value (int)
           case IntegerLiteral(value: Int) =>
+            ch << Ldc(value)
             
           // "value"
           case StringLiteral(value: String) =>
+            ch << Ldc(value)
             
           // value (true or false)
           case BooleanLiteral(value: Boolean) =>
+            if(value)
+              ch << Ldc(1)
+            else
+              ch << Ldc(0)
             
           // new Int[length]
           case toolc.parser.Trees.NewArray(length: ExprTree) =>
+            evalExpr(length)
+            ch << AbstractByteCodes.NewArray(10)
             
           // new objectId()
           case NewObject(objectId: Identifier) =>
+            ch << DefaultNew(objectId.getSymbol.name)
             
           // this
           case ThisObject() =>
+            // "this" should not be called in main, this is checked before
+            ch << ArgLoad(0)
             
           // id (special case :)
-          case Identifier(value) => 
+          case id @ Identifier(value) =>
+            
+            // TODO: Support fields calls
+            
+            // Has to be correct (verified in Analyzer)
+            val vs = id.getSymbol.asInstanceOf[VariableSymbol];
+            
+            val argIndex = paramMapping.get(vs)
+            argIndex match {
+              case Some(idx) => ch << ArgLoad(idx)
+              case None => {
+                // Passed the Analyzer : double-check is useless
+                val idx = varMapping.get(vs).get
+                
+                id.getType match {
+                  case TInt => ILoad(idx) 
+                  case TBoolean => ILoad(idx)
+                  case TIntArray => ALoad(idx)
+                  case TString => ALoad(idx)
+                  case TObject(_) => ALoad(idx)
+                  
+                  // We don't do anything for TAny and TError that shouldn't appear at this step
+                  case _ =>
+                }
+              }
+            }
         }
       }
       
@@ -160,6 +316,7 @@ trait CodeGenerator {
           case PrintLn(expr) => {
             ch << GetStatic("java/lang/System", "out", "Ljava/io/PrintStream;")
             evalExpr(expr)
+<<<<<<< HEAD
             expr.getType match {
               case TBoolean =>
                 
@@ -171,10 +328,13 @@ trait CodeGenerator {
                 ch << InvokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V")
               case _ => 
             }
+=======
+        	ch << InvokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V")
+>>>>>>> 5f12638c9ae2108e94a0bbce850aee427a45d859
         	ch << RETURN
           }
           case Block(statements) => {
-            for(stat <- method.statements) {
+            for(stat <- statements) {
               evalStat(stat)
             }
           }
