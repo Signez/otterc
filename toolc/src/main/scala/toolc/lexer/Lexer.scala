@@ -239,13 +239,12 @@ trait Lexer {
 			      source.next()
 			    }
 			    
-			    // CORRECTION: what if the file ends with */ and no following
-			    // character. In general, when you have a loop, with two possible
-			    // outcome (valid/exhaustion), check both conditions after the
-			    // loop, not only one case.
 			    if(!source.hasNext) {
-                  if (previous == '*' && source.ch == '/') return Token(EOF); 
-                  else {
+                  if (previous == '*' && source.ch == '/') {
+                    // Multiline comment was the last thing of file (correctly closed)
+                    return Token(EOF).setPos(source.pos); 
+                  } else {
+                    // Un-terminated multiline comment
 			        error("\n - Unexpected EOF, expecting \"*/\"");
 			        return Token(BAD).setPos(source.pos);
 			      }

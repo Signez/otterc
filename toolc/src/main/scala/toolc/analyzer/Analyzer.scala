@@ -62,30 +62,15 @@ trait Analyzer {
 
       val classSymbol = new ClassSymbol(clazz.id.value);
 
-      // CORRECTION: it seems that your test does not work at all,
-      // you might want to test with this code and avoid your compiler
-      // to enter an endless loop.
-      //
-      //    object Main { def main(): Unit = { {} } }
-      //    class B extends D {}
-      //    class C extends B {}
-      //    class D extends C {}
-      //
       checkForCycles(clazz, List());
 
       classSymbol.parent = clazz.extendz match {
         case Some(parentId) => 
-          // Presence of parent class already checked in cycle inheritance avoiding loop (checkForCycles) 
-          
-          // CORRECTION:
-          val parent=findClassDecl(parentId.value).get
-          if (parent!=clazz) {
+          val parent = findClassDecl(parentId.value).get
+          if (parent != clazz) { // Not parent of itself
             collectClass(parent)
             Some(gs.classes(parentId.value))
           } else None
-          
-          //collectClass(findClassDecl(parentId.value).get)
-          //Some(gs.classes(parentId.value))
         case None => None
       }
 
