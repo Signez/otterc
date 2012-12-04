@@ -299,9 +299,9 @@ trait CodeGenerator {
                   case ms @ MethodSymbol(_,_) => 
                     vs.getType match {
                       case TInt =>
-                        //TODO: IStore, LStore, DStore etc
-                      	//TODO: store Param with ArgLoad
                       	ch << IStore(varMapping(vs))
+                      case TBoolean =>
+                        ch << IStore(varMapping(vs))
                       case _ =>
                     }
 
@@ -335,12 +335,10 @@ trait CodeGenerator {
             evalExpr(expr)
             expr.getType match {
               case TBoolean =>
-                
+                ch << InvokeVirtual("java/io/PrintStream", "println", "(B)V")
               case TInt =>
-                
+                ch << InvokeVirtual("java/io/PrintStream", "println", "(I)V")
               case TString =>
-                //TODO: Remove this "hello world"
-                ch << Ldc("hello World")
                 ch << InvokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V")
               case _ => 
             }
