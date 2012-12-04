@@ -137,6 +137,7 @@ trait TypeChecker {
 	  }
       
       if(expList.exists(expected => computedType.isSubTypeOf(expected))) {
+        expr.setType(computedType);
     	computedType;
       } else {
         if(computedType != TError) {
