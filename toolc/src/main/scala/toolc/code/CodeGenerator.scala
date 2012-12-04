@@ -212,9 +212,9 @@ trait CodeGenerator {
               ch << Ldc(0)
             
           // new Int[length]
-          case na @ toolc.parser.Trees.NewArray(length: ExprTree) =>
+          case toolc.parser.Trees.NewArray(length: ExprTree) =>
             evalExpr(length)
-            ch << AbstractByteCodes.NewArray(getTypeSignature(na.getType))
+            ch << AbstractByteCodes.NewArray(10)
             
           // new objectId()
           case NewObject(objectId: Identifier) =>
@@ -330,7 +330,7 @@ trait CodeGenerator {
                     evalExpr(expr)
                     ch << IASTORE
                   case ms @ MethodSymbol(_,_) =>
-                    ch << ALoad(varMapping(vs))
+                    evalExpr(id)
                     evalExpr(index)
                     evalExpr(expr)
                     ch << IASTORE
