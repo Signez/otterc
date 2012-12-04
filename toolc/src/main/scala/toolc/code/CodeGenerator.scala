@@ -157,7 +157,7 @@ trait CodeGenerator {
             
             
           // lhs[rhs]
-          case Index(lhs, rhs) =>
+          case idx @ Index(lhs, rhs) =>
             evalExpr(lhs)
             evalExpr(rhs)
             ch << IALOAD
