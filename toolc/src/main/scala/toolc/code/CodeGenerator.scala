@@ -19,7 +19,7 @@ trait CodeGenerator {
 	    case TString => "Ljava/lang/String;"
 	    case TBoolean => "Z"
 	    case TIntArray => "[I"
-	    case TObject(classSymbol) => "L/" + classSymbol.name + ";"
+	    case TObject(classSymbol) => "L" + classSymbol.name + ";"
 	    case _ => sys.error("Can't generate signature for type " + t) // TAny, TUntyped, TError
 	  }
 	}
