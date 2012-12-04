@@ -381,7 +381,7 @@ trait CodeGenerator {
             ch << Ldc(0)
             ch << IStore(varMapping(varSymbol))
           case TString =>
-            ch << Ldc(0)
+            ch << Ldc("")
             ch << AStore(varMapping(varSymbol))
 		  case TIntArray =>
             ch << Ldc(0)
