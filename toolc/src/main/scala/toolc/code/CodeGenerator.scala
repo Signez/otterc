@@ -274,6 +274,21 @@ trait CodeGenerator {
             }
             ch << Label(endLabel)
           }
+          case While(condition, loop) => {
+            val loopLabel = ch.getFreshLabel("loopWhile")
+            val endLabel = ch.getFreshLabel("endWhile")
+            
+            evalExpr(condition)
+            ch << IfNull(endLabel)
+            
+            ch << Label(loopLabel)
+            evalStat(loop)
+            evalExpr(condition)
+            ch << IfNull(endLabel)
+            ch << Goto(loopLabel)
+            
+            ch << Label(endLabel)
+          }
           case Assignment(id, expr) => {
             evalExpr(expr)
             id.getSymbol match {
