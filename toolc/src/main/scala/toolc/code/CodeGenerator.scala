@@ -212,7 +212,7 @@ trait CodeGenerator {
               ch << Ldc(0)
             
           // new Int[length]
-          case na @ toolc.parser.Trees.NewArray(length: ExprTree) =>
+          case toolc.parser.Trees.NewArray(length: ExprTree) =>
             evalExpr(length)
             // Beware: 10 is a constant that should not be replaced.
             //         Strings can only be used there with objects ; 
@@ -333,7 +333,7 @@ trait CodeGenerator {
                     evalExpr(expr)
                     ch << IASTORE
                   case ms @ MethodSymbol(_,_) =>
-                    ch << ALoad(varMapping(vs))
+                    evalExpr(id)
                     evalExpr(index)
                     evalExpr(expr)
                     ch << IASTORE
