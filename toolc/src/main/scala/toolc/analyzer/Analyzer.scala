@@ -87,6 +87,7 @@ trait Analyzer {
           }
 
           val variableSymbol = new VariableSymbol(param.id.value);
+          variableSymbol.parentSymbol = methodSymbol
           
           variableSymbol.setPos(param);
           param.setSymbol(variableSymbol);
@@ -119,6 +120,7 @@ trait Analyzer {
           }
 
           val memberSymbol = new VariableSymbol(member.id.value);
+          memberSymbol.parentSymbol = methodSymbol
 
           memberSymbol.setPos(member);
           member.setSymbol(memberSymbol);
@@ -141,6 +143,7 @@ trait Analyzer {
         }
         
         val variableSymbol = new VariableSymbol(variable.id.value);
+        variableSymbol.parentSymbol = classSymbol
         
         if(classSymbol.parent.isDefined) {
           val pMember = classSymbol.parent.get.lookupVar(variable.id.value);

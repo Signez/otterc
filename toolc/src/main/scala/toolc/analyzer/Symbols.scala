@@ -47,7 +47,7 @@ object Symbols {
     }
   }
 
-  class ClassSymbol(val name: String) extends Symbol {
+  case class ClassSymbol(val name: String) extends Symbol {
     var parent: Option[ClassSymbol] = None
     var methods = new HashMap[String, MethodSymbol]
     var members = new HashMap[String, VariableSymbol]
@@ -76,7 +76,7 @@ object Symbols {
   }
   
 
-  class MethodSymbol(val name: String, val classSymbol: ClassSymbol) extends Symbol with Typed {
+  case class MethodSymbol(val name: String, val classSymbol: ClassSymbol) extends Symbol with Typed {
     var params: HashMap[String, VariableSymbol] = new HashMap[String, VariableSymbol]
     var members: HashMap[String, VariableSymbol] = new HashMap[String, VariableSymbol]
     // should contain the same values as the params map, but in the right order.
@@ -94,5 +94,7 @@ object Symbols {
     }
   }
 
-  class VariableSymbol(val name: String) extends Symbol with Typed
+  case class VariableSymbol(val name: String) extends Symbol with Typed {
+    var parentSymbol: Symbol = null
+  }
 }

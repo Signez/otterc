@@ -29,10 +29,16 @@ trait CodeGenerator {
     def addOpCode(method: MethodDecl, mHandler: MethodHandler): Unit = {
       val ch: CodeHandler = mHandler.codeHandler
 
+      //mapping var symbols of method to slot indice 
       val varMapping =
         for {
           variable <- method.variables
-        } yield (variable.getSymbol -> ch.getFreshVar) 
+        } yield (variable.getSymbol -> ch.getFreshVar)
+      val paramMapping =
+        for {
+          argument <- method.arguments
+        } yield (argument.getSymbol -> ch.getFreshVar)
+      val methodVarMapping = varMapping ++ paramMapping
 
       def evalExpr(expr: ExprTree, ch: CodeHandler): Unit = {
         expr match {
@@ -113,10 +119,15 @@ trait CodeGenerator {
             ch << Label(endLabel)
           }
           case Assignment(id, expr) => {
-            if(id.getSymbol.isInstanceOf[ClassSymbol]) {
-              
-            } else if (id.getSymbol.isInstanceOf[MethodSymbol]) {
-              
+            id.getSymbol match {
+              case vs @ VariableSymbol(_) =>
+                vs.parentSymbol match {
+                  case cs @ ClassSymbol(_) =>
+//                    ch << PutField(ct.getSymbol.name, id.value, getTypeSignature(id.getSymbol.getType))
+                  case ms @ MethodSymbol(_,_) =>
+                  case _ =>
+                }
+              case _ =>  
             }
           }
           case PrintLn(expr) => {
