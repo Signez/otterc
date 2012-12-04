@@ -340,7 +340,6 @@ trait CodeGenerator {
                 ch << InvokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V")
               case _ => 
             }
-        	ch << RETURN
           }
           case Block(statements) => {
             for(stat <- statements) {
