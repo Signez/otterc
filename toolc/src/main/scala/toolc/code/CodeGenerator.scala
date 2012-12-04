@@ -380,6 +380,16 @@ trait CodeGenerator {
           case TBoolean =>
             ch << Ldc(0)
             ch << IStore(varMapping(varSymbol))
+          case TString =>
+            ch << Ldc(0)
+            ch << AStore(varMapping(varSymbol))
+		  case TIntArray =>
+            ch << Ldc(0)
+            ch << AbstractByteCodes.NewArray(10)
+            ch << AStore(varMapping(varSymbol))
+		  case TObject(_) =>
+            ch << Ldc(0)
+            ch << AStore(varMapping(varSymbol))
           case _ =>
         }
       }
