@@ -302,6 +302,12 @@ trait CodeGenerator {
                       	ch << IStore(varMapping(vs))
                       case TBoolean =>
                         ch << IStore(varMapping(vs))
+                      case TString =>
+                        ch << ASTORE 
+                      case TIntArray =>
+                        ch << ASTORE 
+                      case TObject(_) =>
+                        ch << ASTORE
                       case _ =>
                     }
 
