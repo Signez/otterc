@@ -294,32 +294,40 @@ trait CodeGenerator {
           case Assignment(id, expr) => {
             id.getSymbol match {
               case vs @ VariableSymbol(value) =>
-                vs.parentSymbol match {
-                  case cs @ ClassSymbol(_) =>
-                    ch << ArgLoad(0)
-                    evalExpr(expr)
-                    ch << PutField(classname, id.value, getTypeSignature(id.getType))
-                  case ms @ MethodSymbol(_,_) => 
-                    vs.getType match {
-                      case TInt =>
-                        evalExpr(expr)
-                      	ch << IStore(varMapping(vs))
-                      case TBoolean =>
-                        evalExpr(expr)
-                        ch << IStore(varMapping(vs))
-                      case TString =>
-                        evalExpr(expr)
-                        ch << AStore(varMapping(vs))
-                      case TIntArray =>
-                        evalExpr(expr)
-                        ch << AStore(varMapping(vs))
-                      case TObject(_) =>
-                        evalExpr(expr)
-                        ch << AStore(varMapping(vs))
-                      case _ =>
-                    }
-
-                  case _ =>
+                
+                val argIndex = paramMapping.get(vs)
+                argIndex match {
+                	case Some(idx) => 
+                	   evalExpr(expr)
+                	   ch << IStore(idx)
+                	case None => 
+		                	vs.parentSymbol match {
+		                  case cs @ ClassSymbol(_) =>
+		                    ch << ArgLoad(0)
+		                    evalExpr(expr)
+		                    ch << PutField(classname, id.value, getTypeSignature(id.getType))
+		                  case ms @ MethodSymbol(_,_) => 
+		                    vs.getType match {
+		                      case TInt =>
+		                        evalExpr(expr)
+		                      	ch << IStore(varMapping(vs))
+		                      case TBoolean =>
+		                        evalExpr(expr)
+		                        ch << IStore(varMapping(vs))
+		                      case TString =>
+		                        evalExpr(expr)
+		                        ch << AStore(varMapping(vs))
+		                      case TIntArray =>
+		                        evalExpr(expr)
+		                        ch << AStore(varMapping(vs))
+		                      case TObject(_) =>
+		                        evalExpr(expr)
+		                        ch << AStore(varMapping(vs))
+		                      case _ =>
+		                    }
+		
+		                  case _ =>
+		                }
                 }
               case _ =>  
             }
