@@ -317,7 +317,7 @@ trait CodeGenerator {
         	ch << RETURN
           }
           case Block(statements) => {
-            for(stat <- method.statements) {
+            for(stat <- statements) {
               evalStat(stat)
             }
           }
