@@ -311,8 +311,6 @@ trait CodeGenerator {
           case PrintLn(expr) => {
             ch << GetStatic("java/lang/System", "out", "Ljava/io/PrintStream;")
             evalExpr(expr)
-            //TODO: Remove this "hello world"
-            ch << Ldc("hello World")
         	ch << InvokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V")
         	ch << RETURN
           }
