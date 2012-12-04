@@ -229,7 +229,6 @@ trait CodeGenerator {
           case id @ Identifier(value) =>
             // Has to be correct (verified in Analyzer)
             val vs = id.getSymbol.asInstanceOf[VariableSymbol];
-            
             val argIndex = paramMapping.get(vs)
             argIndex match {
               case Some(idx) => ch << ArgLoad(idx)
@@ -239,7 +238,7 @@ trait CodeGenerator {
                 
                 maybeIdx match {
                   case Some(idx) => vs.getType match { 
-	                  case TInt => ILoad(idx) 
+	                  case TInt => ch << ILoad(idx)
 	                  case TBoolean => ILoad(idx)
 	                  case TIntArray => ALoad(idx)
 	                  case TString => ALoad(idx)
