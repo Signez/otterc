@@ -158,8 +158,8 @@ trait CodeGenerator {
             
           // lhs[rhs]
           case Index(lhs, rhs) =>
-            evalExpr(rhs)
             evalExpr(lhs)
+            evalExpr(rhs)
             ch << IALOAD
             
           // expr.length
@@ -212,9 +212,9 @@ trait CodeGenerator {
               ch << Ldc(0)
             
           // new Int[length]
-          case toolc.parser.Trees.NewArray(length: ExprTree) =>
+          case na @ toolc.parser.Trees.NewArray(length: ExprTree) =>
             evalExpr(length)
-            ch << AbstractByteCodes.NewArray(10)
+            ch << AbstractByteCodes.NewArray(getTypeSignature(na.getType))
             
           // new objectId()
           case NewObject(objectId: Identifier) =>
