@@ -18,7 +18,7 @@ object Main {
         Console.err.println("usage: toolc <File.tool>")
       }
 
-      compUnit.compile(args(1))
+      compUnit.compile(args(3))
     }
   }
 }
