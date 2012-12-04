@@ -9,7 +9,8 @@ class aaSomething {
 		var i : Int;
 		var j : Int;
 	
-		println("mamma");
+		i=1;
+		println(i);
 		return "";
 	}
 }

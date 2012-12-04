@@ -124,9 +124,14 @@ trait CodeGenerator {
                   case cs @ ClassSymbol(_) =>
                     ch << PutField(classname, id.value, getTypeSignature(id.getType))
                   case ms @ MethodSymbol(_,_) => 
-                    //TODO: IStore, LStore, DStore etc
-                    //TODO: store Param with ArgLoad
-                    ch << IStore(varMapping(vs))
+                    vs.getType match {
+                      case TInt =>
+                        //TODO: IStore, LStore, DStore etc
+                      	//TODO: store Param with ArgLoad
+                      	ch << IStore(varMapping(vs))
+                      case _ =>
+                    }
+
                   case _ =>
                 }
               case _ =>  
@@ -155,9 +160,17 @@ trait CodeGenerator {
           case PrintLn(expr) => {
             ch << GetStatic("java/lang/System", "out", "Ljava/io/PrintStream;")
             evalExpr(expr)
-            //TODO: Remove this "hello world"
-            ch << Ldc("hello World")
-        	ch << InvokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V")
+            expr.getType match {
+              case TBoolean =>
+                
+              case TInt =>
+                
+              case TString =>
+                //TODO: Remove this "hello world"
+                ch << Ldc("hello World")
+                ch << InvokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V")
+              case _ => 
+            }
         	ch << RETURN
           }
           case Block(statements) => {
