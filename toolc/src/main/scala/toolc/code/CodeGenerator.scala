@@ -296,8 +296,8 @@ trait CodeGenerator {
               case vs @ VariableSymbol(value) =>
                 vs.parentSymbol match {
                   case cs @ ClassSymbol(_) =>
-                    evalExpr(expr)
                     ch << ArgLoad(0)
+                    evalExpr(expr)
                     ch << PutField(classname, id.value, getTypeSignature(id.getType))
                   case ms @ MethodSymbol(_,_) => 
                     vs.getType match {
