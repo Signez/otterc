@@ -9,7 +9,7 @@ object Main {
 
     val compUnit = new Compiler(args(0))
     if(args.length == 1) {
-      compUnit.compile("./")
+      compUnit.compile(".")
     } else {
       if(!"-d".equals(args(1))) {
         compUnit.fatalError("Unrecognized option: " + args(1))

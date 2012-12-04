@@ -102,6 +102,7 @@ trait CodeGenerator {
       }
       
       def evalStat(stat: StatTree, ch: CodeHandler): Unit = {
+        sys.error("yep, went through here: evalSatt")
         stat match {
           // TODO: Add opcodes to ch for every statements
           case If(condition, then, elze) => {
@@ -134,6 +135,7 @@ trait CodeGenerator {
             }
           }
           case PrintLn(expr) => {
+            sys.error("yep, went through here: Println")
             ch << GetStatic("java/lang/System/out", "println", "Ljava/io/PrintStream")
             ch << Ldc("hello World")
         	ch << InvokeVirtual("java/io/PrintStream", "println", "Ljava/io/String")
@@ -147,11 +149,10 @@ trait CodeGenerator {
         }
       }
       
-      for(decl <- method.statements) {
-        
+      for(stat <- method.statements) {
+        evalStat(stat, ch)
       }
     }
-    
     
     val classFile = 
 	  ct.extendz match {
@@ -176,6 +177,6 @@ trait CodeGenerator {
       addOpCode(methodDecl, methodHandler)
     }
     
-    classFile.writeToFile("./" + ct.getSymbol.name + ".class")
+    classFile.writeToFile(dir + ct.getSymbol.name + ".class")
   }
 }

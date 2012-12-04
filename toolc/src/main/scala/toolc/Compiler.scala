@@ -26,11 +26,11 @@ class Compiler(val fileName: String)
 
 
     val outputDir = classDir + "/"
-
+    
     val checkDir: java.io.File = new java.io.File(outputDir)
     if(!checkDir.exists) checkDir.mkdir
     if(!checkDir.isDirectory) fatalError("Cannot find output directory " + outputDir)
-
+    
     // Parsing
     var parsedTree: Option[Tree] = None
     parsedTree = Some(parseSource)
@@ -49,6 +49,8 @@ class Compiler(val fileName: String)
     typeCheck(mainProg, global)
     terminateIfErrors
 
+//    generateClassFile(shortName, global, mainProg.main, outputDir)
+    
     // Create classes
     mainProg.classes foreach {
       ct => generateClassFile(shortName,global,ct,outputDir)
