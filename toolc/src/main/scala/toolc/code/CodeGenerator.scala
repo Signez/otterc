@@ -227,9 +227,6 @@ trait CodeGenerator {
             
           // id (special case :)
           case id @ Identifier(value) =>
-            
-            // TODO: Support fields calls
-            
             // Has to be correct (verified in Analyzer)
             val vs = id.getSymbol.asInstanceOf[VariableSymbol];
             
@@ -238,17 +235,22 @@ trait CodeGenerator {
               case Some(idx) => ch << ArgLoad(idx)
               case None => {
                 // Passed the Analyzer : double-check is useless
-                val idx = varMapping.get(vs).get
+                val maybeIdx = varMapping.get(vs)
                 
-                id.getType match {
-                  case TInt => ILoad(idx) 
-                  case TBoolean => ILoad(idx)
-                  case TIntArray => ALoad(idx)
-                  case TString => ALoad(idx)
-                  case TObject(_) => ALoad(idx)
+                maybeIdx match {
+                  case Some(idx) => vs.getType match { 
+	                  case TInt => ILoad(idx) 
+	                  case TBoolean => ILoad(idx)
+	                  case TIntArray => ALoad(idx)
+	                  case TString => ALoad(idx)
+	                  case TObject(_) => ALoad(idx)
                   
-                  // We don't do anything for TAny and TError that shouldn't appear at this step
-                  case _ =>
+	                  // We don't do anything for TAny and TError that shouldn't appear at this step
+	                  case _ =>
+                  }
+                  case None => 
+                    ch << ArgLoad(0) // (getting from this)
+                  	ch << GetField(classname, value, getTypeSignature(vs.getType))
                 }
               }
             }
