@@ -1,10 +1,10 @@
 object testTest {
     def main() : Unit = {
-		println(new doSomething().go());
+		println(new aaSomething().go());
     }
 }
 
-class doSomething {
+class aaSomething {
 	def go() : String = {
 		println("mamma");
 		return "";

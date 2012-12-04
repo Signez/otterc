@@ -158,7 +158,8 @@ trait CodeGenerator {
     classFile.addDefaultConstructor
     classFile.setSourceFile("")
     val mainMethodHandler = classFile.addMainMethod
-    addOpCode(new MethodDecl(new Identifier("main"), null, new IntType(), null, List(mainObject.stat), new IntegerLiteral(0)), mainMethodHandler, gs, mainObject.id.value)
+    val mainMethodDecl = new MethodDecl(new Identifier("main"), List(), new IntType(), List(), List(mainObject.stat), new IntegerLiteral(0))
+    addOpCode(mainMethodDecl, mainMethodHandler, gs, mainObject.id.value)
     classFile.writeToFile(dir + mainObject.getSymbol.name + ".class")
   }
   
