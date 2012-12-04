@@ -334,13 +334,9 @@ trait CodeGenerator {
             ch << GetStatic("java/lang/System", "out", "Ljava/io/PrintStream;")
             evalExpr(expr)
             expr.getType match {
-              case TBoolean =>
-                
-              case TInt =>
-                
+              case TBoolean | TInt =>
+                ch << InvokeVirtual("java/io/PrintStream", "println", "(I)V")
               case TString =>
-                //TODO: Remove this "hello world"
-                ch << Ldc("hello World")
                 ch << InvokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V")
               case _ => 
             }
