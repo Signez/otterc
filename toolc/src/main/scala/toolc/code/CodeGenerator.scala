@@ -102,7 +102,6 @@ trait CodeGenerator {
       }
       
       def evalStat(stat: StatTree): Unit = {
-        sys.error("yep, went through here: evalSatt")
         stat match {
           // TODO: Add opcodes to ch for every statements
           case If(condition, then, elze) => {
@@ -135,10 +134,10 @@ trait CodeGenerator {
             }
           }
           case PrintLn(expr) => {
-            sys.error("yep, went through here: Println")
-            ch << GetStatic("java/lang/System/out", "println", "Ljava/io/PrintStream")
+            ch << GetStatic("java/lang/System", "out", "Ljava/io/PrintStream;")
             ch << Ldc("hello World")
-        	ch << InvokeVirtual("java/io/PrintStream", "println", "Ljava/io/String")
+        	ch << InvokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V")
+        	ch << RETURN
           }
           case Block(statements) => {
             
@@ -152,6 +151,8 @@ trait CodeGenerator {
       for(stat <- method.statements) {
         evalStat(stat)
       }
+      ch.print
+      ch.freeze
     }
     
     val classFile = 
@@ -159,6 +160,8 @@ trait CodeGenerator {
 	    case Some(parent) => new ClassFile(ct.getSymbol.name, Some(parent.getSymbol.name))
 	    case _ => new ClassFile(ct.id.value, None)
 	  }
+    
+    classFile.addDefaultConstructor
     
     //Source File from which the class file was generated 
     classFile.setSourceFile("")
