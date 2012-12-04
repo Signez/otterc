@@ -13,19 +13,18 @@ trait CodeGenerator {
   import AbstractByteCodes._
   import ByteCodes._
   
-  
-    def getTypeSignature(t: Type): String = {
-      t match {
-        case TInt => "I"
-        case TString => "Ljava/lang/String;"
-        case TBoolean => "Z"
-        case TIntArray => "[I"
-        case TObject(classSymbol) => ""
-        case _ => sys.error("Can't generate signature for type " + t) // TAny, TUntyped, TError
-      }
-    }
+	def getTypeSignature(t: Type): String = {
+	  t match {
+	    case TInt => "I"
+	    case TString => "Ljava/lang/String;"
+	    case TBoolean => "Z"
+	    case TIntArray => "[I"
+	    case TObject(classSymbol) => ""
+	    case _ => sys.error("Can't generate signature for type " + t) // TAny, TUntyped, TError
+	  }
+	}
     
-    def addOpCode(method: MethodDecl, mHandler: MethodHandler, gs: GlobalScope, ct: ClassDecl): Unit = {
+    def addOpCode(method: MethodDecl, mHandler: MethodHandler, gs: GlobalScope, classname: String): Unit = {
       val ch: CodeHandler = mHandler.codeHandler
 
       //mapping var symbols of method to slot indice 
@@ -123,7 +122,7 @@ trait CodeGenerator {
               case vs @ VariableSymbol(_) =>
                 vs.parentSymbol match {
                   case cs @ ClassSymbol(_) =>
-                    ch << PutField(ct.getSymbol.name, id.value, getTypeSignature(id.getType))
+                    ch << PutField(classname, id.value, getTypeSignature(id.getType))
                   case ms @ MethodSymbol(_,_) =>
                     //TODO: IStore, LStore, DStore etc
                     ch << IStore(varMapping(vs))
@@ -159,8 +158,8 @@ trait CodeGenerator {
     classFile.addDefaultConstructor
     classFile.setSourceFile("")
     val mainMethodHandler = classFile.addMainMethod
-//    addOpCode(new mainObject.stat, mainMethodHandler, gs, ct)
-//    classFile.writeToFile(dir + mainMethodHandler.getSymbol.name + ".class")
+    addOpCode(new MethodDecl(new Identifier("main"), null, new IntType(), null, List(mainObject.stat), new IntegerLiteral(0)), mainMethodHandler, gs, mainObject.id.value)
+    classFile.writeToFile(dir + mainObject.getSymbol.name + ".class")
   }
   
   
@@ -189,7 +188,7 @@ trait CodeGenerator {
       val methodName = methodDecl.getSymbol.name
       val paramTypSig = methodDecl.arguments.map(arg=>getTypeSignature(arg.getSymbol.getType)).mkString
       val methodHandler: MethodHandler = classFile.addMethod(returnTypeSig, methodName, paramTypSig)
-      addOpCode(methodDecl, methodHandler, gs, ct)
+      addOpCode(methodDecl, methodHandler, gs, ct.id.value)
     }
     
     classFile.writeToFile(dir + ct.getSymbol.name + ".class")

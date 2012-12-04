@@ -49,7 +49,8 @@ class Compiler(val fileName: String)
     typeCheck(mainProg, global)
     terminateIfErrors
 
-//    generateClassFile(shortName, global, mainProg.main, outputDir)
+    // create main class
+    generateMainClassFile(shortName, global, mainProg.main, outputDir)
     
     // Create classes
     mainProg.classes foreach {
