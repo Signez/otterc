@@ -19,7 +19,7 @@ trait CodeGenerator {
 	    case TString => "Ljava/lang/String;"
 	    case TBoolean => "Z"
 	    case TIntArray => "[I"
-	    case TObject(classSymbol) => ""
+	    case TObject(classSymbol) => "L/" + classSymbol.name + ";"
 	    case _ => sys.error("Can't generate signature for type " + t) // TAny, TUntyped, TError
 	  }
 	}
@@ -131,24 +131,45 @@ trait CodeGenerator {
               case _ =>  
             }
           }
+          case IndexAssignment(id, index, expr) => {
+            evalExpr(expr)
+            id.getSymbol match {
+              case vs @ VariableSymbol(_) =>
+                vs.parentSymbol match {
+                  case cs @ ClassSymbol(_) =>
+                    ch << GetField(classname, id.value, getTypeSignature(id.getType))		//"[I"
+                    evalExpr(index)
+                    evalExpr(expr)
+                    ch << IASTORE  
+                  case ms @ MethodSymbol(_,_) =>
+                    ch << ALoad(varMapping(vs))
+                    evalExpr(index)
+                    evalExpr(expr)
+                    ch << IASTORE  
+                  case _ =>
+                }
+              case _ =>
+            }
+          }
           case PrintLn(expr) => {
             ch << GetStatic("java/lang/System", "out", "Ljava/io/PrintStream;")
+            evalExpr(expr)
+            //TODO: Remove this "hello world"
             ch << Ldc("hello World")
         	ch << InvokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V")
         	ch << RETURN
           }
           case Block(statements) => {
-            
-          }
-          case IndexAssignment(id, index, expr) => {
-            
+            for(stat <- method.statements) {
+              evalStat(stat)
+            }
           }
         }
       }
       
       for(stat <- method.statements) {
         evalStat(stat)
-      }
+	  }
 	  ch.print
 	  ch.freeze
 	}
@@ -183,7 +204,7 @@ trait CodeGenerator {
       classFile.addField(getTypeSignature(varDecl.getSymbol.getType), varDecl.id.value)
     }
     
-    //iterate through all methods
+    //create Op Code of methods
     for (methodDecl <- ct.methods) {
       val returnTypeSig = getTypeSignature(methodDecl.getSymbol.getType)
       val methodName = methodDecl.getSymbol.name
