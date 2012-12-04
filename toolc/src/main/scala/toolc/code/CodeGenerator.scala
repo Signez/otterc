@@ -293,7 +293,7 @@ trait CodeGenerator {
           }
           case Assignment(id, expr) => {
             id.getSymbol match {
-              case vs @ VariableSymbol(_) =>
+              case vs @ VariableSymbol(value) =>
                 vs.parentSymbol match {
                   case cs @ ClassSymbol(_) =>
                     evalExpr(expr)
