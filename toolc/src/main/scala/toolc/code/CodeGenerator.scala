@@ -239,13 +239,13 @@ trait CodeGenerator {
                 maybeIdx match {
                   case Some(idx) => vs.getType match { 
 	                  case TInt => ch << ILoad(idx)
-	                  case TBoolean => ILoad(idx)
-	                  case TIntArray => ALoad(idx)
-	                  case TString => ALoad(idx)
-	                  case TObject(_) => ALoad(idx)
+	                  case TBoolean => ch << ILoad(idx)
+	                  case TIntArray => ch << ALoad(idx)
+	                  case TString => ch << ALoad(idx)
+	                  case TObject(_) => ch << ALoad(idx)
                   
 	                  // We don't do anything for TAny and TError that shouldn't appear at this step
-	                  case _ =>
+	                  case _ => sys.error("That should not happen.")
                   }
                   case None => 
                     ch << ArgLoad(0) // (getting from this)
