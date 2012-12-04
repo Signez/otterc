@@ -126,14 +126,17 @@ trait CodeGenerator {
                   case cs @ ClassSymbol(_) =>
                     ch << PutField(ct.getSymbol.name, id.value, getTypeSignature(id.getType))
                   case ms @ MethodSymbol(_,_) =>
-                    ch << IStore(methodVarMapping(vs))
+                    //TODO: IStore, LStore, DStore etc
+                    ch << IStore(varMapping(vs))
                   case _ =>
                 }
               case _ =>  
             }
           }
           case PrintLn(expr) => {
-            
+            ch << GetStatic("java/lang/System/out", "println", "Ljava/io/PrintStream")
+            ch << Ldc("hello World")
+        	ch << InvokeVirtual("java/io/PrintStream", "println", "Ljava/io/String")
           }
           case Block(statements) => {
             
