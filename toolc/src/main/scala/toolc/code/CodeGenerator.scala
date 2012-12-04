@@ -102,8 +102,8 @@ trait CodeGenerator {
             
           // lhs && rhs
           case And(lhs, rhs) =>
-            val falseLabel = ch.getFreshLabel("falseOr")
-            val endLabel = ch.getFreshLabel("endOr")
+            val falseLabel = ch.getFreshLabel("falseAnd")
+            val endLabel = ch.getFreshLabel("endAnd")
             
             evalExpr(lhs)
             ch << IfNull(falseLabel) 
@@ -119,8 +119,8 @@ trait CodeGenerator {
             
           // lhs == rhs
           case Equals(lhs, rhs) =>
-            val trueLabel = ch.getFreshLabel("trueOr")
-            val endLabel = ch.getFreshLabel("endOr")
+            val trueLabel = ch.getFreshLabel("trueEqual")
+            val endLabel = ch.getFreshLabel("endEqual")
             evalExpr(lhs)
             evalExpr(rhs)
                 
@@ -141,8 +141,8 @@ trait CodeGenerator {
             
           // lhs < rhs
           case LesserThan(lhs, rhs) =>
-            val trueLabel = ch.getFreshLabel("trueOr")
-            val endLabel = ch.getFreshLabel("endOr")
+            val trueLabel = ch.getFreshLabel("trueLT")
+            val endLabel = ch.getFreshLabel("endLT")
             
             evalExpr(lhs)
             evalExpr(rhs)
