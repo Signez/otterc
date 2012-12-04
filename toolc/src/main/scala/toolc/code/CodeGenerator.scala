@@ -392,7 +392,7 @@ trait CodeGenerator {
     
     val classFile = 
 	  ct.extendz match {
-	    case Some(parent) => new ClassFile(ct.getSymbol.name, Some(parent.getSymbol.name))
+	    case Some(parent) => new ClassFile(ct.getSymbol.name, Some(parent.value))
 	    case _ => new ClassFile(ct.id.value, None)
 	  }
     
