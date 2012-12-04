@@ -2,8 +2,10 @@ package toolc
 
 object Main {
   def main(args: Array[String]) {
+
     if (args.length < 1) {
       Console.err.println("usage: toolc <File.tool>")
+      Console.err.println("       toolc -d <outdir> <File.tool>")
       sys.exit(1)
     }
 
@@ -15,7 +17,8 @@ object Main {
         compUnit.fatalError("Unrecognized option: " + args(1))
         Console.err.println("usage: toolc <File.tool>")
       }
-      compUnit.compile(args(2))
+
+      compUnit.compile(args(1))
     }
   }
 }
