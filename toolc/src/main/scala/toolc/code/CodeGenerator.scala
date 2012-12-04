@@ -40,7 +40,7 @@ trait CodeGenerator {
         } yield (argument.getSymbol -> ch.getFreshVar)).toMap
       val methodVarMapping = varMapping ++ paramMapping
 
-      def evalExpr(expr: ExprTree, ch: CodeHandler): Unit = {
+      def evalExpr(expr: ExprTree): Unit = {
         expr match {
           // lhs + rhs
           case Plus(lhs, rhs) =>
@@ -101,7 +101,7 @@ trait CodeGenerator {
         }
       }
       
-      def evalStat(stat: StatTree, ch: CodeHandler): Unit = {
+      def evalStat(stat: StatTree): Unit = {
         sys.error("yep, went through here: evalSatt")
         stat match {
           // TODO: Add opcodes to ch for every statements
@@ -109,18 +109,18 @@ trait CodeGenerator {
             val elseLabel = ch.getFreshLabel("elseIf")
             val endLabel = ch.getFreshLabel("endIf")
             
-            evalExpr(condition, ch)
+            evalExpr(condition)
             ch << IfNull(elseLabel)
-            evalStat(then, ch)
+            evalStat(then)
             ch << Goto(endLabel) << Label(elseLabel)
             elze match {
-              case Some(e) => evalStat(e, ch)
+              case Some(e) => evalStat(e)
               case None =>
             }
             ch << Label(endLabel)
           }
           case Assignment(id, expr) => {
-            evalExpr(expr, ch)
+            evalExpr(expr)
             id.getSymbol match {
               case vs @ VariableSymbol(_) =>
                 vs.parentSymbol match {
@@ -150,7 +150,7 @@ trait CodeGenerator {
       }
       
       for(stat <- method.statements) {
-        evalStat(stat, ch)
+        evalStat(stat)
       }
     }
     
