@@ -64,7 +64,7 @@ trait CodeGenerator {
                 } else {
                   ch << InvokeVirtual("java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;")
                 }
-                ch << InvokeVirtual("java/lang/StringBuilder", "toString", "()S")
+                ch << InvokeVirtual("java/lang/StringBuilder", "toString", "()Ljava/lang/String;")
             }
             
           // lhs - rhs
