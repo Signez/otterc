@@ -158,8 +158,8 @@ trait CodeGenerator {
             
           // lhs[rhs]
           case Index(lhs, rhs) =>
-            evalExpr(rhs)
             evalExpr(lhs)
+            evalExpr(rhs)
             ch << IALOAD
             
           // expr.length
