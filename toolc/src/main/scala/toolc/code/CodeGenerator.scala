@@ -333,7 +333,6 @@ trait CodeGenerator {
           case PrintLn(expr) => {
             ch << GetStatic("java/lang/System", "out", "Ljava/io/PrintStream;")
             evalExpr(expr)
-<<<<<<< HEAD
             expr.getType match {
               case TBoolean =>
                 
@@ -345,9 +344,6 @@ trait CodeGenerator {
                 ch << InvokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V")
               case _ => 
             }
-=======
-        	ch << InvokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V")
->>>>>>> 5f12638c9ae2108e94a0bbce850aee427a45d859
         	ch << RETURN
           }
           case Block(statements) => {
