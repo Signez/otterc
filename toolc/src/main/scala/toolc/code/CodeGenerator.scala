@@ -113,7 +113,11 @@ trait CodeGenerator {
             ch << Label(endLabel)
           }
           case Assignment(id, expr) => {
-            
+            if(id.getSymbol.isInstanceOf[ClassSymbol]) {
+              
+            } else if (id.getSymbol.isInstanceOf[MethodSymbol]) {
+              
+            }
           }
           case PrintLn(expr) => {
             
@@ -142,10 +146,12 @@ trait CodeGenerator {
     //Source File from which the class file was generated 
     classFile.setSourceFile("")
     
+    //add field of class
     for (varDecl <- ct.variables) {
       classFile.addField(getTypeSignature(varDecl.getSymbol.getType), varDecl.id.value)
     }
     
+    //iterate through all methods
     for (methodDecl <- ct.methods) {
       val returnTypeSig = getTypeSignature(methodDecl.getSymbol.getType)
       val methodName = methodDecl.getSymbol.name
