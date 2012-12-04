@@ -12,9 +12,8 @@ trait CodeGenerator {
   // Bytecodes
   import AbstractByteCodes._
   import ByteCodes._
-
-  /** Writes the proper .class file in a given directory. An empty string for dir is equivalent to "./". */
-  def generateClassFile(srcFileName: String, gs: GlobalScope, ct: ClassDecl, dir: String): Unit = {
+  
+  
     def getTypeSignature(t: Type): String = {
       t match {
         case TInt => "I"
@@ -26,7 +25,7 @@ trait CodeGenerator {
       }
     }
     
-    def addOpCode(method: MethodDecl, mHandler: MethodHandler): Unit = {
+    def addOpCode(method: MethodDecl, mHandler: MethodHandler, gs: GlobalScope, ct: ClassDecl): Unit = {
       val ch: CodeHandler = mHandler.codeHandler
 
       //mapping var symbols of method to slot indice 
@@ -151,9 +150,22 @@ trait CodeGenerator {
       for(stat <- method.statements) {
         evalStat(stat)
       }
-      ch.print
-      ch.freeze
-    }
+	  ch.print
+	  ch.freeze
+	}
+    
+  def generateMainClassFile(srcFileName: String, gs: GlobalScope, mainObject: MainObject, dir: String) {
+    val classFile = new ClassFile(mainObject.getSymbol.name, None)
+    classFile.addDefaultConstructor
+    classFile.setSourceFile("")
+    val mainMethodHandler = classFile.addMainMethod
+//    addOpCode(new mainObject.stat, mainMethodHandler, gs, ct)
+//    classFile.writeToFile(dir + mainMethodHandler.getSymbol.name + ".class")
+  }
+  
+  
+  /** Writes the proper .class file in a given directory. An empty string for dir is equivalent to "./". */
+  def generateClassFile(srcFileName: String, gs: GlobalScope, ct: ClassDecl, dir: String): Unit = {
     
     val classFile = 
 	  ct.extendz match {
@@ -177,7 +189,7 @@ trait CodeGenerator {
       val methodName = methodDecl.getSymbol.name
       val paramTypSig = methodDecl.arguments.map(arg=>getTypeSignature(arg.getSymbol.getType)).mkString
       val methodHandler: MethodHandler = classFile.addMethod(returnTypeSig, methodName, paramTypSig)
-      addOpCode(methodDecl, methodHandler)
+      addOpCode(methodDecl, methodHandler, gs, ct)
     }
     
     classFile.writeToFile(dir + ct.getSymbol.name + ".class")
