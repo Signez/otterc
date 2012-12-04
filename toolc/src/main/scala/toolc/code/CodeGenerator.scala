@@ -214,7 +214,10 @@ trait CodeGenerator {
           // new Int[length]
           case na @ toolc.parser.Trees.NewArray(length: ExprTree) =>
             evalExpr(length)
-            ch << AbstractByteCodes.NewArray(getTypeSignature(na.getType))
+            // Beware: 10 is a constant that should not be replaced.
+            //         Strings can only be used there with objects ; 
+            //         not with primitive types.
+            ch << AbstractByteCodes.NewArray(10) // 10 = Integer
             
           // new objectId()
           case NewObject(objectId: Identifier) =>
