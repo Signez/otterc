@@ -2,4 +2,6 @@
 */.history
 */target
 */project
+toolc/testcases/*.class
+toolc/testcases/*/*.class
 toolc/*.class
