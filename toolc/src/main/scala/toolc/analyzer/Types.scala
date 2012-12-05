@@ -87,6 +87,27 @@ object Types {
 
   // special object to implement the fact that all objects are its subclasses.
   val anyObject = TObject(new ClassSymbol("Object"))
+  
+  
+  // type that allows functions as regular type (inputTypes...) => outputType
+  case class TFunction(inputTypes: List[Type], outputType: Type) extends Type {
+    override def isSubTypeOf(tpe: Type): Boolean =
+    	tpe match {
+        	case TAny => true
+    		case TFunction(iTs, oT) => 
+    		  iTs.size == inputTypes.size && 
+    		  oT.isSubTypeOf(outputType) && 
+    		  !(for((original, candidate) <- inputTypes.zip(iTs)) yield { candidate.isSubTypeOf(original) }).contains(false)
+    		  	
+    		case _ => false
+    	}
+    
+    override def toString = 
+      if(inputTypes.size > 0)
+        "(" + inputTypes.mkString(", ") + ") => " + outputType
+      else
+        inputTypes.mkString("") + " => " + outputType
+  }
 
   /** Add this trait to all tree nodes which represent typed expressions.
     * This will be needed for code generation. Also add it to VariableSymbol and
