@@ -214,6 +214,8 @@ trait Lexer {
         if(source.ch == '=') {
           // Two equals signs ?
           Token(EQUALS);
+        } else if (source.ch == '>') {
+          Token(ARROW);
         } else {
           // Only on equals signs ?
           // Returning immediately, to not consume the following character (readaheading)

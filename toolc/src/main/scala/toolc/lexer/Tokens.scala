@@ -66,6 +66,7 @@ object Tokens {
   case object STRING extends TokenInfo with TokenClass			// String
   case object BOOL extends TokenInfo with TokenClass			// Bool
   case object UNIT extends TokenInfo with TokenClass			// Unit
+  case object ARROW extends TokenInfo with TokenClass			// =>
 
   // Identifiers
   case class ID(value: String) extends TokenInfo {
