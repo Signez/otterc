@@ -88,6 +88,8 @@ object Types {
   // special object to implement the fact that all objects are its subclasses.
   val anyObject = TObject(new ClassSymbol("Object"))
   
+  
+  // type that allows functions as regular type (inputTypes...) => outputType
   case class TFunction(inputTypes: List[Type], outputType: Type) extends Type {
     override def isSubTypeOf(tpe: Type): Boolean =
     	tpe match {
@@ -99,6 +101,7 @@ object Types {
     		  	
     		case _ => false
     	}
+    
     override def toString = 
       if(inputTypes.size > 0)
         "(" + inputTypes.mkString(", ") + ") => " + outputType
