@@ -152,10 +152,15 @@ trait Parser extends Lexer {
         
       case IDCLASS =>
         return parseIdentifier;
-        
+
       case _ =>
         expected(INT, STRING, BOOL, IDCLASS);
     }
+  }
+  
+  def readFuncArgs: List[VarDecl] = {
+    
+    return List()
   }
   
   /**
@@ -174,18 +179,22 @@ trait Parser extends Lexer {
 		eat(OPAREN);
 		
 		// Arguments 
-		var arguments: List[VarDecl] = List();
+		var arguments: List[VarDecl] = readFuncArgs;
 		if(currentToken.info != CPAREN) {
 		  while(currentToken.info != CPAREN) {
 		    if(arguments.length > 0)
 		      eat(COMMA);
 		    
-			val argId = parseIdentifier;
-		    eat(COLON);
-		    val firstVarType = parseType;
-		    
-		    val arg = new VarDecl(argId, firstVarType).setPos(argId);
-		    arguments = arg :: arguments;
+		    if (currentToken.info == OPAREN) {
+		      
+		    } else {
+			    val argId = parseIdentifier;
+			    eat(COLON);
+			    val firstVarType = parseType;
+			    
+			    val arg = new VarDecl(argId, firstVarType).setPos(argId);
+			    arguments = arg :: arguments;
+		    }
 		  }
 		}
 		arguments = arguments.reverse;

@@ -75,9 +75,11 @@ object Trees {
   
   case class ThisObject() extends ExprTree with Symbolic[ClassSymbol]          // this
   
-  case class FuncExpr(arguments: List[TypeTree],
-		  				statements: StatTree) extends ExprTree				   // ( arguments.. ) => { statemenets; }
-  
+  case class FuncExpr(arguments: List[TypeTree], statements: StatTree,
+		  				returnExpr: ExprTree) extends ExprTree				   // ( arguments.. ) => { statemenets; }
+  case class FuncCall(funcId: Identifier,
+		  		expressions: List[ExprTree]) extends ExprTree				   // func( stats; )
+		  				
   case class Identifier(value: String) extends TypeTree with ExprTree with Symbolic[Symbol]	{   // id (special case :)
     self =>
       
