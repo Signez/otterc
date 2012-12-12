@@ -153,14 +153,23 @@ trait Parser extends Lexer {
       case IDCLASS =>
         return parseIdentifier;
 
+      //first-class function declaration
+      case OPAREN =>
+        readToken
+        var argTypeList : List[TypeTree] = List()
+        argTypeList ::= parseType
+        while(currentToken.info == COMMA) {
+          readToken
+          argTypeList ::= parseType
+        }
+        eat(CPAREN)
+        eat(ARROW)
+        val returnType : TypeTree = parseType
+        return new FuncType(argTypeList, Nil, returnType)
+
       case _ =>
         expected(INT, STRING, BOOL, IDCLASS);
     }
-  }
-  
-  def readFuncArgs: List[VarDecl] = {
-    
-    return List()
   }
   
   /**
@@ -179,22 +188,19 @@ trait Parser extends Lexer {
 		eat(OPAREN);
 		
 		// Arguments 
-		var arguments: List[VarDecl] = readFuncArgs;
+		var arguments: List[VarDecl] = List();
 		if(currentToken.info != CPAREN) {
 		  while(currentToken.info != CPAREN) {
-		    if(arguments.length > 0)
-		      eat(COMMA);
+			if(arguments.length > 0)
+			  eat(COMMA);
+	    
+			val argId = parseIdentifier;
+			eat(COLON);
+
+			val firstVarType = parseType;
 		    
-		    if (currentToken.info == OPAREN) {
-		      
-		    } else {
-			    val argId = parseIdentifier;
-			    eat(COLON);
-			    val firstVarType = parseType;
-			    
-			    val arg = new VarDecl(argId, firstVarType).setPos(argId);
-			    arguments = arg :: arguments;
-		    }
+			val arg = new VarDecl(argId, firstVarType).setPos(argId);
+			arguments = arg :: arguments;
 		  }
 		}
 		arguments = arguments.reverse;
@@ -457,6 +463,12 @@ trait Parser extends Lexer {
       eat(CBRACKET);
       
       return new Index(leftExpr, index).setPos(leftExpr);
+    } else if (currentToken.info == CPAREN) {
+      readToken
+      val funcId = parseIdentifier
+	  val paramList = parseParametersList
+	  return new FuncCall(funcId, paramList)
+	  
     } else {
       return leftExpr;
     } 
