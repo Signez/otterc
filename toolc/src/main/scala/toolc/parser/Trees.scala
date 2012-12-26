@@ -75,7 +75,7 @@ object Trees {
   case class NewObject(objectId: Identifier) extends ExprTree                  // new objectId()
   
   case class ThisObject() extends ExprTree with Symbolic[ClassSymbol]          // this
-  
+
   case class FuncExpr(arguments: List[VarDecl], variables: List[VarDecl], statements: List[StatTree],
 		  				returnExpr: ExprTree) extends ExprTree				   // ( arguments.. ) => { varDecl; statemenets; }
   case class FuncCall(funcId: Identifier,
