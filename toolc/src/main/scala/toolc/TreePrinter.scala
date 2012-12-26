@@ -15,8 +15,8 @@ object TreePrinter {
     def printTree(t: Tree, level: Int): String = {
       val leftWhiteSpace: String = "  " * level
 
-      def printIdValue(id: Identifier) : String = {
-        if(withSymbolIDs) {
+      def printIdValue(id: Identifier): String = {
+        if (withSymbolIDs) {
           try {
             id.getSymbol.name + "#" + id.getSymbol.id
           } catch {
@@ -24,7 +24,7 @@ object TreePrinter {
           }
         } else id.value
       }
-      
+
       val code: String =
         t match {
           //MainObject ( ClassDeclaration )* <EOF>
@@ -118,6 +118,24 @@ object TreePrinter {
             return leftWhiteSpace + printIdValue(id) + "[" + printTree(index, 0) + "] = " +
               printTree(expr, 0) + ";" + NEWLINE
 
+          //Expression ( arguments.. ) => { varDecl; statemenets; }
+          case FuncExpr(args, vars, stats, returnExpr) =>
+            val strArguments =
+            (for (VarDecl(id, theType) <- args)
+              yield printTree(id, 0) + ": " + printTree(theType, 0)).mkString("(", ", ", ")")
+            val strVariables: String =
+              (for { variable: VarDecl <- vars } yield printTree(variable, level + 1)).mkString
+            val strStatements: String =
+              (for { stat: StatTree <- stats } yield printTree(stat, level + 1)).mkString
+            val strType: String = printTree(returnExpr, 0)
+            return strArguments + " => " + "{" + NEWLINE + strVariables + strStatements +
+              leftWhiteSpace * 2 + "return " + printTree(returnExpr, 0) + ";" + NEWLINE +
+              leftWhiteSpace + "}" + NEWLINE
+
+          //Expression func( arguments; )
+          case FuncCall(funcId, exprList) =>
+            printTree(funcId, 0) + exprList.map(printTree(_, 0)).mkString("(", ", ", ")")
+
           //Expression ( && | || | == | < | + | - | * | / ) Expression
           case Plus(lhs, rhs) => "(" + printTree(lhs, 0) + " + " + printTree(rhs, 0) + ")"
           case Minus(lhs, rhs) => "(" + printTree(lhs, 0) + " - " + printTree(rhs, 0) + ")"
@@ -172,6 +190,8 @@ object TreePrinter {
           case IntArrayType() => "Int[]"
           case IntType() => "Int"
           case StringType() => "String"
+          case FuncType(args, _, returnType) =>
+            args.map(printTree(_, 0)).mkString("(", ", ", ")") + " => " + printTree(returnType, 0)
         }
       return code
     }

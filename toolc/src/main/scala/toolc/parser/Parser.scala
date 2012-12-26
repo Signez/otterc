@@ -527,7 +527,7 @@ trait Parser extends Lexer {
     return list.reverse;
   }
 
-  def parseFuncExpr(args: List[Identifier]): FuncExpr = {
+  def parseFuncExpr(args: List[VarDecl]): FuncExpr = {
     eat(ARROW);
     eat(OBLOCK);
 
@@ -546,7 +546,7 @@ trait Parser extends Lexer {
     val returnExpr = parseExpression;
     eat(SEMICOLON);
     eat(CBLOCK);
-    
+
     new FuncExpr(args, variables, statements, returnExpr);
   }
 
@@ -562,14 +562,19 @@ trait Parser extends Lexer {
       case OPAREN =>
         eat(OPAREN);
         val expr = parseExpression;
-        // ( arg1, arg2, ... ) => { statements; }
-        val returnExpr : ExprTree =
-          if (currentToken.info == COMMA && expr.isInstanceOf[Identifier]) {
-            var list: List[Identifier] = List(expr.asInstanceOf[Identifier]);
+        // ( arg1 : argType1, ... ) => { statements; }
+        val returnExpr: ExprTree =
+          if (currentToken.info == COLON && expr.isInstanceOf[Identifier]) {
+            val ident = expr.asInstanceOf[Identifier]
+            eat(COLON)
+            val argType = parseType
+            var list: List[VarDecl] = List(new VarDecl(ident, argType));
             while (currentToken.info == COMMA) {
               eat(COMMA)
               val ident = parseIdentifier
-              list = ident :: list
+              eat(COLON)
+              val argType = parseType
+              list = new VarDecl(ident, argType) :: list
             }
             eat(CPAREN);
             parseFuncExpr(list)
@@ -583,11 +588,13 @@ trait Parser extends Lexer {
       case IDCLASS =>
         val identifier = parseIdentifier;
 
-        if (currentToken.info == OPAREN) {				// func( statements; )
+        if (currentToken.info == OPAREN) { // func( statements; )
           val paramList = parseParametersList
-          return new FuncCall(identifier, paramList)    
-        } else if (currentToken.info == ARROW) {		// arg => { statements; }
-          return parseFuncExpr(List(identifier))
+          return new FuncCall(identifier, paramList)
+        } else if (currentToken.info == COLON) { // arg : Type => { statements; }
+          eat(COLON)
+          val argType = parseType
+          return parseFuncExpr(List(new VarDecl(identifier, argType)))
         } else {
           return identifier
         }
