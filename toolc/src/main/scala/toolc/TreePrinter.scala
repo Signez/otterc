@@ -13,7 +13,7 @@ object TreePrinter {
 
   def apply(withSymbolIDs: Boolean)(t: Tree): String = {
     def printTree(t: Tree, level: Int): String = {
-      val leftWhiteSpace: String = "  " * level
+      val leftWhiteSpace: String = " " * level
 
       def printIdValue(id: Identifier): String = {
         if (withSymbolIDs) {
@@ -48,9 +48,9 @@ object TreePrinter {
             val strExtendz: String =
               if (extendz.isDefined) " extends " + extendz.get.value else ""
             val strVariables: String =
-              (for { variable: VarDecl <- variables } yield printTree(variable, level + 1)).mkString
+              (for { variable: VarDecl <- variables } yield printTree(variable, level + 2)).mkString
             val strMethods: String =
-              (for { method: MethodDecl <- methods } yield printTree(method, level + 1)).mkString
+              (for { method: MethodDecl <- methods } yield printTree(method, level + 2)).mkString
             return strClass + strExtendz + " {" +
               NEWLINE + strVariables + strMethods + "}" + NEWLINE
 
@@ -65,19 +65,19 @@ object TreePrinter {
                 yield argument match { case VarDecl(id, theType) => printIdValue(id) + ": " + printTree(theType, 0) }).mkString(", ")
             val strType: String = printTree(returnType, 0)
             val strVariables: String =
-              (for { variable: VarDecl <- variables } yield printTree(variable, level + 1)).mkString
+              (for { variable: VarDecl <- variables } yield printTree(variable, level + 2)).mkString
             val strStatements: String =
-              (for { stat: StatTree <- statements } yield printTree(stat, level + 1)).mkString
+              (for { stat: StatTree <- statements } yield printTree(stat, level + 2)).mkString
             return leftWhiteSpace + "def " + printIdValue(id) + "(" + strArguments + ") : " +
               strType + " = { " + NEWLINE + strVariables + strStatements +
-              leftWhiteSpace * 2 + "return " + printTree(returnExpr, 0) + ";" + NEWLINE +
+              leftWhiteSpace + " " * 2 + "return " + printTree(returnExpr, 0) + ";" + NEWLINE +
               leftWhiteSpace + "}" + NEWLINE
 
           //{ ( Statement )* }
           case Block(stats) =>
             if (stats.length > 1) {
               val strStatements =
-                (for { stat: StatTree <- stats } yield printTree(stat, level + 1)).mkString
+                (for { stat: StatTree <- stats } yield printTree(stat, level + 2)).mkString
               return leftWhiteSpace + "{" + NEWLINE + strStatements +
                 leftWhiteSpace + "}" + NEWLINE
             } else if (stats.length == 0) {
@@ -89,10 +89,10 @@ object TreePrinter {
           //if ( Expression ) Statement ( else Statement )?
           case If(condition, then, elze) =>
             val strIf: String = leftWhiteSpace + "if(" + printTree(condition, 0) + ")" +
-              NEWLINE + printTree(then, level + 1)
+              NEWLINE + printTree(then, level + 2)
             val strElze: String =
               if (elze.isInstanceOf[Some[ExprTree]])
-                leftWhiteSpace + "else " + NEWLINE + printTree(elze.get, level + 1)
+                leftWhiteSpace + "else " + NEWLINE + printTree(elze.get, level + 2)
               else
                 "";
             return strIf + strElze +
@@ -101,7 +101,7 @@ object TreePrinter {
           //while ( Expression ) Statement
           case While(condition, loop) =>
             val strCondition = printTree(condition, 0)
-            val strStatement = printTree(loop, level + 1)
+            val strStatement = printTree(loop, level + 2)
             return leftWhiteSpace + "while (" + strCondition + ")" + NEWLINE +
               strStatement
 
@@ -111,7 +111,8 @@ object TreePrinter {
 
           //Identifier = Expression ;
           case Assignment(id, expr) =>
-            return leftWhiteSpace + printIdValue(id) + " = " + printTree(expr, 0) + ";" + NEWLINE
+            var strIdent = printIdValue(id) + " = "
+            return leftWhiteSpace + strIdent + printTree(expr, level + strIdent.size) + ";" + NEWLINE
 
           //Identifier [ Expression ] = Expression ;
           case IndexAssignment(id, index, expr) =>
@@ -124,13 +125,13 @@ object TreePrinter {
             (for (VarDecl(id, theType) <- args)
               yield printTree(id, 0) + ": " + printTree(theType, 0)).mkString("(", ", ", ")")
             val strVariables: String =
-              (for { variable: VarDecl <- vars } yield printTree(variable, level + 1)).mkString
+              (for { variable: VarDecl <- vars } yield printTree(variable, level + 2)).mkString
             val strStatements: String =
-              (for { stat: StatTree <- stats } yield printTree(stat, level + 1)).mkString
+              (for { stat: StatTree <- stats } yield printTree(stat, level + 2)).mkString
             val strType: String = printTree(returnExpr, 0)
             return strArguments + " => " + "{" + NEWLINE + strVariables + strStatements +
-              leftWhiteSpace * 2 + "return " + printTree(returnExpr, 0) + ";" + NEWLINE +
-              leftWhiteSpace + "}" + NEWLINE
+              leftWhiteSpace + " " * 2 + "return " + printTree(returnExpr, 0) + ";" + NEWLINE +
+              leftWhiteSpace + "}"
 
           //Expression func( arguments; )
           case FuncCall(funcId, exprList) =>
@@ -155,7 +156,7 @@ object TreePrinter {
           //Expression . Identifier ( ( Expression ( , Expression )* )? )
           case MethodCall(objectId, methodId, expressions) => {
             val strExpressions =
-              (for { expr: ExprTree <- expressions } yield printTree(expr, level + 1)).mkString(", ")
+              (for { expr: ExprTree <- expressions } yield printTree(expr, level + 2)).mkString(", ")
             return printTree(objectId, 0) + "." + printIdValue(methodId) + "(" + strExpressions + ")"
           }
 

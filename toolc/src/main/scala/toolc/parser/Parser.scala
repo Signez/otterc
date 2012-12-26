@@ -591,10 +591,10 @@ trait Parser extends Lexer {
         if (currentToken.info == OPAREN) { // func( statements; )
           val paramList = parseParametersList
           return new FuncCall(identifier, paramList)
-        } else if (currentToken.info == COLON) { // arg : Type => { statements; }
-          eat(COLON)
-          val argType = parseType
-          return parseFuncExpr(List(new VarDecl(identifier, argType)))
+//        } else if (currentToken.info == COLON) { // arg : Type => { statements; }
+//          eat(COLON)
+//          val argType = parseType
+//          return parseFuncExpr(List(new VarDecl(identifier, argType)))
         } else {
           return identifier
         }
