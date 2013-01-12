@@ -1,5 +1,14 @@
-If you did not finish what you had planned, explain here what's missing.
+Many of the previously enumerated steps are quite dependants on each other,
+and doing this project iteratively was complicated. Therefore, few blocking
+bugs are still present in the provided implementation, mainly caused by the
+medium quality of generated code. The legacy from previous labs were quite difficult
+to manage; indeed, previous code wasn't made to be re-usable in a new step,
+so we had do "backport" parts of the mechanisms, like symbol collections or
+type generating (with the newly generated code).
 
-In any case, describe how you could further extend your compiler in the
-direction you chose. This section should convince us that you understand the
-challenges of writing a good compiler for high-level programming languages.
+With a peer-review and some bugfixing, the provided code would be able to
+support all the closures mechanism.
+
+Of course, in a addition to these improvements, we could work on anonymous inline class
+declarations, runtime method injecting (creating methods at runtime) or how to
+implement Prototype-Oriented Programming in Tool (as in ECMAScript).

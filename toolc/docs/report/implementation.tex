@@ -1,7 +1,7 @@
 \subsection{Theoretical Background}
 
 \subsubsection{Funarg Problem}
-"Funarg Problem refers to the difficulty in implementing first-class functions (functions as first-class objects) in implementations with stack-based memory allocation." (Wikipedia "Funarg Problem", Jan 2013) To illustrate this, let us consider y from the previous example. As we mentioned already, would y nomally be out of scope at the moment the func1 is invoked (line 30). But since it is used in a first-class function, it becomes a free variable (contrary to bound varaibles) and can still be accessed even if the context of the variable is closed. In order to make this possible we introduce \emph{closures}, which binds the functional literals to their \emph{free variables}. One way of implementing this is descriped by the \emph{Lambda Lifting}. \newline
+\emph{"Funarg Problem refers to the difficulty in implementing first-class functions (functions as first-class objects) in implementations with stack-based memory allocation."} says Wikipedia about \emph{Funarg Problem}.  To illustrate this, let us consider y from the previous example. As we mentioned already, would y nomally be out of scope at the moment the func1 is invoked (line 30). But since it is used in a first-class function, it becomes a free variable (contrary to bound varaibles) and can still be accessed even if the context of the variable is closed. In order to make this possible we introduce \emph{closures}, which binds the functional literals to their \emph{free variables}. One way of implementing this is descriped by the \emph{Lambda Lifting}. \newline
 
 \subsection{New Elements in the Syntax Tree}
 Before solving the Funarg problem, however, we first are going to illustrate how other elements of the compiler have been implemented. To start off with the new syntax which had to be introduced, we give here an overview:
@@ -10,7 +10,6 @@ Before solving the Funarg problem, however, we first are going to illustrate how
 sealed trait TypeTree extends Tree
   //( type.. ) => returnType
   case class FuncType(arguments: List[TypeTree],
-    context: List[TypeTree], 
     returnType: TypeTree) extends TypeTree
   ...
 
@@ -121,10 +120,10 @@ case class TFunction(inputTypes: List[Type],
     }
 \end{lstlisting}
 
-\subsection{Code Generator}
-For the code generator, we roughly proceeded as follows:
+\subsection{Lifter}
+At last, we do the main work of lamda-lifting, creating closures.
 \begin{enumerate}
-\item (All previous steps, typechecking)
+\item \emph{(All previous steps, typechecking)}
 \item Tag variables and members that are used inside functions as "to be boxed"
 \item Create boxed classes for every needed boxing types
 \item Replace all tagged occurences by boxed objects : declarations, assignations, usages
