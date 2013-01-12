@@ -229,7 +229,10 @@ trait TypeChecker {
         
         method.statements.foreach(tcStat(_))
         
-        tcExpr(method.returnExpr, currentMethod.getType)
+        if(method.returnExpr.isDefined) 
+          tcExpr(method.returnExpr.get, currentMethod.getType)
+        else
+          TUnit
       }
     }
     

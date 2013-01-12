@@ -79,6 +79,9 @@ object Symbols {
                           val context: Option[MethodSymbol] = None) extends Symbol with Typed {
     var params: HashMap[String, VariableSymbol] = new HashMap[String, VariableSymbol]
     var members: HashMap[String, VariableSymbol] = new HashMap[String, VariableSymbol]
+    
+    var contextualParams: HashMap[String, VariableSymbol] = new HashMap[String, VariableSymbol]
+    
     // should contain the same values as the params map, but in the right order.
     var argList: List[VariableSymbol] = Nil
 
@@ -88,7 +91,15 @@ object Symbols {
         case None => 
           members.get(n) match {
             case ms @ Some(_) => ms
-            case None => if(context.isDefined) context.get.lookupVar(n); else classSymbol.lookupVar(n)
+            case None => 
+              if(context.isDefined) {
+                val retour = context.get.lookupVar(n);
+                if(retour.isDefined) {
+                  retour.get.needBoxing = true // tag as need boxing
+                }
+                retour
+              }
+              else classSymbol.lookupVar(n)
           }
       }   
     }
@@ -96,5 +107,6 @@ object Symbols {
 
   case class VariableSymbol(val name: String) extends Symbol with Typed {
     var parentSymbol: Symbol = null
+    var needBoxing: Boolean = false
   }
 }

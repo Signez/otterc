@@ -209,7 +209,7 @@ trait Analyzer {
         case StringType() => TString
         case IntArrayType() => TIntArray
         case id @ Identifier(_) => TObject(id.getSymbol.asInstanceOf[ClassSymbol])
-        case FuncType(args, context, returnType) => TFunction((args ::: context).map(el => createType(el)), createType(returnType)) 
+        case FuncType(args, returnType) => TFunction((args).map(el => createType(el)), createType(returnType)) 
         case _ =>
           sys.error("Unexpected Type discovered!")
           null
@@ -481,12 +481,12 @@ trait Analyzer {
         }
         methodDecl.getSymbol.setType(createType(methodDecl.returnType));
         
-        setInExpr(methodDecl.returnExpr);
+        if(methodDecl.returnExpr.isDefined) setInExpr(methodDecl.returnExpr.get);
       }
     }
     
     classSymbol = gs.mainClass;
-    methodSymbol = new MethodSymbol("main", classSymbol); // Fake and empty method for main
+    methodSymbol = new MethodSymbol("main", classSymbol, None); // Fake and empty method for main
     setInStat(prog.main.stat);
   }
 }
