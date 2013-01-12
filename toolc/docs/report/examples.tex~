@@ -1,0 +1,52 @@
+Here is an example that summarizes the challenges of implementing first-class functions:
+
+\lstset{
+  numbers=left,
+  numbersep=4pt
+}
+\begin{lstlisting}
+object firstClassExampleStarter{
+  def main() : Unit = {
+    println(new firstClassExample().go());
+  }
+}
+
+class firstClassExample {
+  var x : Int;
+
+  def getFunc() : (Int) => Int = {
+    var y : Int;
+    var func : (Int) => Int;
+
+    y = 7;
+    func = (z: Int) => {
+      x = x-z;
+      y = y+z;
+      return x+y;
+    };
+    return func;
+  }
+
+  def go() : Int = {
+    var func1 : (Int) => Int;
+    var func2 : (Int) => Int;
+
+    x = 44;
+    func1 = getFunc();
+    func2 = getFunc();
+    println(func1(2));			// will print x+y=42+9=51
+    println(func2(6));			// will print x+y=36+13=49
+    println(func1(1));			// will print x+y=35+10=45
+    return 0;
+  }
+}
+\end{lstlisting}
+
+Short description of the code example: \newline
+(10) function declaration that returns a first-class function \newline
+(12+28+29) variable declarations, which take functional literals as values \newline
+(15) assigning a functional literal to a variable \newline
+(16+17) new assignement of a non-local variable \newline
+(30) invokation of the first-class function func1. We notice that y, which normally would be out of scope at this point in code, can still be accessed and is initially equal to 7. X, on the other hand, is not out of scope, it is equal to 44. \newline
+(31) invocation of the first-class function func2. We notice that y hasn't change and is intially equal to 7 again, whereas x is in the beginning of func2 invocation equal to 42. \newline
+(32) second invocation of func1. We notice that y is intially equal to 9, that is the same value as when the first invokation of func1 terminated on line 30. \newline
