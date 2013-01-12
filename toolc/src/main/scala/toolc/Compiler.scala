@@ -43,6 +43,9 @@ class Compiler(val fileName: String)
 
     // Name analysis
     val global: GlobalScope = analyzeSymbols(mainProg)
+    
+    print(TreePrinter(true)(mainProg))
+    
     terminateIfErrors
 
     // Type checking

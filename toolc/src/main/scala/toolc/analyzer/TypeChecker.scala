@@ -113,6 +113,27 @@ trait TypeChecker {
 		      TError
 		  }
           
+          
+        case func @ FuncExpr(arguments, variables, statements, returnExpr) =>
+          val context = currentMethod
+          currentMethod = func.getSymbol
+          
+          statements.foreach(tcStat(_))
+          
+          currentMethod = context
+          
+          TFunction(arguments.map(varDecl => varDecl.getSymbol.getType), 
+        		  	if(returnExpr.isDefined) tcExpr(returnExpr.get, TAny); else TUnit)
+        
+        case FuncCall(function, expressions) =>
+          val funType = tcExpr(function, anyFunction).asInstanceOf[TFunction]
+          
+          for((expected, localExpr) <- funType.inputTypes.zip(expressions)) {
+	        tcExpr(localExpr, expected);
+	      }
+          
+          funType.outputType
+          
         case IntegerLiteral(value) => TInt
         case StringLiteral(value) => TString
         case BooleanLiteral(value) => TBoolean

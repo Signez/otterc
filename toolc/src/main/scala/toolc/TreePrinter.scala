@@ -120,7 +120,7 @@ object TreePrinter {
               printTree(expr, 0) + ";" + NEWLINE
 
           //Expression ( arguments.. ) => { varDecl; statemenets; }
-          case FuncExpr(args, vars, stats, returnExpr) =>
+          case FuncExpr(args, vars, stats, optReturnExpr) =>
             val strArguments =
             (for (VarDecl(id, theType) <- args)
               yield printTree(id, 0) + ": " + printTree(theType, 0)).mkString("(", ", ", ")")
@@ -128,10 +128,12 @@ object TreePrinter {
               (for { variable: VarDecl <- vars } yield printTree(variable, level + 2)).mkString
             val strStatements: String =
               (for { stat: StatTree <- stats } yield printTree(stat, level + 2)).mkString
-            val strType: String = printTree(returnExpr, 0)
-            return strArguments + " => " + "{" + NEWLINE + strVariables + strStatements +
-              leftWhiteSpace + " " * 2 + "return " + printTree(returnExpr, 0) + ";" + NEWLINE +
-              leftWhiteSpace + "}"
+            val strReturn: String = optReturnExpr match {
+              case Some(returnExpr) => leftWhiteSpace + " " * 2 + "return " + printTree(returnExpr, 0) + ";" + NEWLINE
+              case None => ""
+            }
+                
+            return strArguments + " => " + "{" + NEWLINE + strVariables + strStatements + strReturn + leftWhiteSpace + "}"
 
           //Expression func( arguments; )
           case FuncCall(funcId, exprList) =>
@@ -191,6 +193,7 @@ object TreePrinter {
           case IntArrayType() => "Int[]"
           case IntType() => "Int"
           case StringType() => "String"
+          case UnitType() => "Unit"
           case FuncType(args, _, returnType) =>
             args.map(printTree(_, 0)).mkString("(", ", ", ")") + " => " + printTree(returnType, 0)
         }

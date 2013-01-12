@@ -29,6 +29,15 @@ object Types {
     }
     override def toString = "[any]"
   }
+  
+  // TUnit is nothing, so it's subtype of nothing (but TAny)
+  case object TUnit extends Type {
+    override def isSubTypeOf(tpe: Type): Boolean = tpe match {
+      case TAny => true
+      case _ => false
+    }
+    override def toString = "Unit"
+  }
 
   case object TIntArray extends Type {
     override def isSubTypeOf(tpe: Type): Boolean =
@@ -94,6 +103,7 @@ object Types {
     override def isSubTypeOf(tpe: Type): Boolean =
     	tpe match {
         	case TAny => true
+        	case `anyFunction` => true
     		case TFunction(iTs, oT) => 
     		  iTs.size == inputTypes.size && 
     		  oT.isSubTypeOf(outputType) && 
@@ -107,6 +117,16 @@ object Types {
         "(" + inputTypes.mkString(", ") + ") => " + outputType
       else
         inputTypes.mkString("") + " => " + outputType
+  }
+  
+  case object anyFunction extends Type { 
+    override def isSubTypeOf(tpe: Type): Boolean =
+       tpe match {
+          case TAny => true
+          case TFunction(_, _) => true
+          case _ => false
+       }
+    override def toString = "[function]"; 
   }
 
   /** Add this trait to all tree nodes which represent typed expressions.

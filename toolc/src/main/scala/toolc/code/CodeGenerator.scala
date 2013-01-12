@@ -196,6 +196,42 @@ trait CodeGenerator {
               case _ => sys.error("Trying to call a method on a non-object in the generating step.")
             }
             
+          // function(expressions...)
+          /*case FuncCall(function, expressions) =>
+            evalExpr(function)
+            for(arg <- expressions) {
+              evalExpr(arg)
+            }
+
+            val returnType = function match {
+              case fun @ FuncExpr(_,_,_,_) => fun.getSymbol.getType.asInstanceOf[TFunction].outputType
+              case id @ Identifier(_) => id.getSymbol.asInstanceOf[VariableSymbol].getType.asInstanceOf[TFunction].outputType
+              case _ => sys.error("Trying to call a non-function in the generating step.");
+            }
+            ch << InvokeVirtual("sfhjnsdkljnfh", "apply", generateMethodSignature(expressions, returnType))
+
+          case fun @ FuncExpr(arguments, variables, statements, returnExpr) =>
+	          val classFile = new ClassFile("anonymous", None)
+	
+	          classFile.addDefaultConstructor
+	
+	          //add field of class
+	          for (varDecl <- variables) {
+	            classFile.addField(getTypeSignature(varDecl.getSymbol.getType), varDecl.id.value)
+	          }
+	
+	          val methodDecl = new MethodDecl(new Identifier("anonymous"), arguments, fun.getType, 
+	        		  						  variables, statements, 
+	        		  						  if(returnExpr.isDefined) returnExpr.get; else StringLiteral("")
+	        		  						  )
+	          val returnTypeSig = getTypeSignature(fun.getType)
+	          val methodName = methodDecl.getSymbol.name
+	          val paramTypSig = methodDecl.arguments.flatMap(arg => getTypeSignature(arg.getSymbol.getType)).mkString
+	          val methodHandler: MethodHandler = classFile.addMethod(returnTypeSig, methodName, paramTypSig)
+	          addOpCode(methodDecl, methodHandler, gs, ct.id.value)
+	
+	          classFile.writeToFile(dir + ct.getSymbol.name + ".class")*/
+            
           // value (int)
           case IntegerLiteral(value: Int) =>
             ch << Ldc(value)
@@ -246,7 +282,9 @@ trait CodeGenerator {
 	                  case TIntArray => ch << ALoad(idx)
 	                  case TString => ch << ALoad(idx)
 	                  case TObject(_) => ch << ALoad(idx)
-                  
+	                  case TUnit => // Nothing happens
+	                  case TFunction(_,_) => ch << ALoad(idx)
+	                    
 	                  // We don't do anything for TAny and TError that shouldn't appear at this step
 	                  case _ => sys.error("That should not happen.")
                   }
@@ -306,7 +344,7 @@ trait CodeGenerator {
 		                    ch << ArgLoad(0)
 		                    evalExpr(expr)
 		                    ch << PutField(classname, id.value, getTypeSignature(id.getType))
-		                  case ms @ MethodSymbol(_,_) => 
+		                  case ms @ MethodSymbol(_,_,_) => 
 		                    vs.getType match {
 		                      case TInt =>
 		                        evalExpr(expr)
@@ -342,7 +380,7 @@ trait CodeGenerator {
                     evalExpr(index)
                     evalExpr(expr)
                     ch << IASTORE
-                  case ms @ MethodSymbol(_,_) =>
+                  case ms @ MethodSymbol(_,_,_) =>
                     evalExpr(id)
                     evalExpr(index)
                     evalExpr(expr)

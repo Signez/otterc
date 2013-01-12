@@ -162,6 +162,7 @@ trait Analyzer {
 
         classSymbol.members += variable.id.value -> variableSymbol;
       }
+      
 
       classSymbol.setPos(clazz);
       clazz.setSymbol(classSymbol);
@@ -208,6 +209,7 @@ trait Analyzer {
         case StringType() => TString
         case IntArrayType() => TIntArray
         case id @ Identifier(_) => TObject(id.getSymbol.asInstanceOf[ClassSymbol])
+        case FuncType(args, context, returnType) => TFunction((args ::: context).map(el => createType(el)), createType(returnType)) 
         case _ =>
           sys.error("Unexpected Type discovered!")
           null
@@ -268,6 +270,117 @@ trait Analyzer {
 	      //  case None => error("Unknown method '" + methodId.value + "' found at position " + methodId.posString);
 	      //}
           expressions.map(expr => setInExpr(expr))
+          
+        case FuncCall(function, expressions) =>
+          setInExpr(function)
+          expressions.map(expr => setInExpr(expr))
+          
+        case func @ FuncExpr(arguments, variables, statements, returnExpr) =>
+          // "Context switching"
+          val parentContext = methodSymbol
+
+          methodSymbol = new MethodSymbol("anonfunc", classSymbol, Some(parentContext));
+
+          for (param <- arguments) {
+            if (methodSymbol.params.contains(param.id.value)) {
+              error("Unexpected redeclaration for parameter '" + param.id.value + "' at position " + param.posString +
+                " (previously declared at " + methodSymbol.params.get(param.id.value).get.posString + ")");
+            }
+
+            if (parentContext.lookupVar(param.id.value).isDefined) {
+              error("Unexpected declaration for parameter '" + param.id.value + "' at position " + param.posString +
+                " (shadows previously declared variable in context, at " + parentContext.lookupVar(param.id.value).get.posString + ")");
+            }
+
+            if (parentContext.classSymbol.lookupMethod(param.id.value).isDefined) {
+              error("Unexpected declaration for parameter '" + param.id.value + "' at position " + param.posString +
+                " (shadows previously declared method in context, at " + parentContext.lookupVar(param.id.value).get.posString + ")");
+            }
+
+            val variableSymbol = new VariableSymbol(param.id.value);
+            variableSymbol.parentSymbol = methodSymbol
+
+            variableSymbol.setPos(param);
+            param.setSymbol(variableSymbol);
+            param.id.setSymbol(variableSymbol);
+
+            methodSymbol.params += param.id.value -> variableSymbol;
+            methodSymbol.argList ::= variableSymbol;
+          }
+
+          methodSymbol.argList = methodSymbol.argList.reverse
+
+          for (member <- variables) {
+            if (methodSymbol.members.contains(member.id.value)) {
+              error("Unexpected redeclaration for local variable '" + member.id.value + "' at position " + member.posString +
+                " (previously declared at " + methodSymbol.members.get(member.id.value).get.posString + ")");
+            }
+
+            if (methodSymbol.params.contains(member.id.value)) {
+              error("Unexpected shadowing local variable declaration '" + member.id.value + "' at position " + member.posString +
+                " (shadows parameter declared at " + methodSymbol.params.get(member.id.value).get.posString + ")");
+            }
+
+            if (parentContext.lookupVar(member.id.value).isDefined) {
+              error("Unexpected shadowing local variable declaration '" + member.id.value + "' at position " + member.posString +
+                " (shadows variable declared in context, at " + parentContext.lookupVar(member.id.value).get.posString + ")");
+            }
+
+            if (parentContext.classSymbol.lookupMethod(member.id.value).isDefined) {
+              error("Unexpected shadowing local variable declaration '" + member.id.value + "' at position " + member.posString +
+                " (shadows method declared in context, at " + parentContext.lookupVar(member.id.value).get.posString + ")");
+            }
+
+            val memberSymbol = new VariableSymbol(member.id.value);
+            memberSymbol.parentSymbol = methodSymbol
+
+            memberSymbol.setPos(member);
+            member.setSymbol(memberSymbol);
+            member.id.setSymbol(memberSymbol);
+
+            methodSymbol.members += member.id.value -> memberSymbol;
+          }
+
+          methodSymbol.setPos(func);
+          func.setSymbol(methodSymbol);
+
+          // Analyzing types in members (variables)
+          variables.foreach(variable => {
+            variable.theType match {
+              case id @ Identifier(value) =>
+                gs.lookupClass(value) match {
+                  case Some(classSym) => id.setSymbol(classSym);
+                  case None => error("Unknown type '" + value + "' found at position " + id.posString);
+                }
+              case _ =>
+            }
+            variable.getSymbol.setType(createType(variable.theType));
+          })
+
+          // Analyzing types in arguments
+          arguments.foreach(param => {
+            param.theType match {
+              case id @ Identifier(value) =>
+                gs.lookupClass(value) match {
+                  case Some(classSym) => id.setSymbol(classSym);
+                  case None => error("Unknown type '" + value + "' found at position " + id.posString);
+                }
+              case _ =>
+            }
+            param.getSymbol.setType(createType(param.theType));
+          })
+
+          // Analyzing method statements
+          statements.foreach(setInStat(_));
+
+          returnExpr match {
+            case Some(expr) => setInExpr(expr)
+            case None =>
+          }
+          
+          // "Context switching"
+          methodSymbol = parentContext
+          
           
         case IntegerLiteral(value) =>
         case StringLiteral(value) =>

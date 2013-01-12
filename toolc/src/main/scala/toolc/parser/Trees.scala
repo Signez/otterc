@@ -41,6 +41,7 @@ object Trees {
   case class IntArrayType() extends TypeTree   // Int[]
   case class FuncType(arguments: List[TypeTree], context: List[TypeTree], 
       returnType: TypeTree) extends TypeTree   //( type.. ) => returnType
+  case class UnitType() extends TypeTree       // Unit
 
   sealed trait StatTree extends Tree
 
@@ -77,8 +78,8 @@ object Trees {
   case class ThisObject() extends ExprTree with Symbolic[ClassSymbol]          // this
 
   case class FuncExpr(arguments: List[VarDecl], variables: List[VarDecl], statements: List[StatTree],
-		  				returnExpr: ExprTree) extends ExprTree				   // ( arguments.. ) => { varDecl; statemenets; }
-  case class FuncCall(funcId: Identifier,
+		  				returnExpr: Option[ExprTree]) extends ExprTree	with Symbolic[MethodSymbol]  // ( arguments.. ) => { varDecl; statemenets; }
+  case class FuncCall(function: ExprTree,
 		  		expressions: List[ExprTree]) extends ExprTree				   // func( arguments; )
 
   case class Identifier(value: String) extends TypeTree with ExprTree with Symbolic[Symbol]	{   // id (special case :)

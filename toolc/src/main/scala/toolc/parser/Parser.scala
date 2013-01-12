@@ -55,6 +55,8 @@ trait Parser extends Lexer {
 
   /**
    * Parse main object.
+   * 
+   * object <id> { def main() : Unit = { <statement> } }
    */
   def parseMainObject: MainObject = {
     val initial = currentToken;
@@ -74,6 +76,8 @@ trait Parser extends Lexer {
 
   /**
    * Parse classes.
+   * 
+   * class <classId> [extends <extendz>] { <variables> <methods> }
    */
   def parseClasses: List[ClassDecl] = {
     var classes: List[ClassDecl] = List();
@@ -100,6 +104,11 @@ trait Parser extends Lexer {
     return classes.reverse;
   }
 
+  /**
+   * Parse variable declarations.
+   * 
+   * var <nameId> : <theType> ;
+   */
   def parseVariablesDecl: List[VarDecl] = {
     var variables: List[VarDecl] = List();
 
@@ -125,37 +134,11 @@ trait Parser extends Lexer {
    */
   def parseType: TypeTree = {
     val initial = currentToken;
-
-    currentToken.tokenClass match {
-      case INT =>
-        // Int[]
-        readToken;
-        if (currentToken.info == OBRACKET) {
-          eat(OBRACKET);
-          eat(CBRACKET);
-
-          return new IntArrayType().setPos(initial);
-
-          // Int
-        } else {
-          return new IntType().setPos(initial);
-        }
-
-      case STRING =>
-        // String
-        eat(STRING);
-        return new StringType().setPos(currentToken);
-
-      case BOOL =>
-        eat(BOOL);
-        return new BoolType().setPos(currentToken);
-
-      case IDCLASS =>
-        return parseIdentifier;
-
-      //first-class function declaration
-      //(type, type) => returnType
-      case OPAREN =>
+    
+    // Multiple types, used in inline function types (FuncType)
+    // (type, type)
+    // Note: It has to be followed by an arrow and a return type (=> type)
+    if(currentToken.info == OPAREN) {
         readToken
         var argTypeList: List[TypeTree] = List()
         argTypeList ::= parseType
@@ -164,12 +147,59 @@ trait Parser extends Lexer {
           argTypeList ::= parseType
         }
         eat(CPAREN)
+        
         eat(ARROW)
-        val returnType: TypeTree = parseType
-        return new FuncType(argTypeList, Nil, returnType)
-
-      case _ =>
-        expected(INT, STRING, BOOL, IDCLASS);
+	    val returnType: TypeTree = parseType
+	    
+	    return new FuncType(argTypeList, Nil, returnType)
+        
+    } else {
+        // Only one type
+	    val firstType : TypeTree = currentToken.tokenClass match {
+	      case INT =>
+	        // Int[]
+	        readToken;
+	        if (currentToken.info == OBRACKET) {
+	          eat(OBRACKET);
+	          eat(CBRACKET);
+	
+	          new IntArrayType().setPos(initial);
+	
+	          // Int
+	        } else {
+	          new IntType().setPos(initial);
+	        }
+	
+	      case STRING =>
+	        // String
+	        eat(STRING);
+	        new StringType().setPos(currentToken);
+	
+	      case BOOL =>
+	        eat(BOOL);
+	        new BoolType().setPos(currentToken);
+	        
+	      case UNIT =>
+	        eat(UNIT);
+	        new UnitType().setPos(currentToken);
+	
+	      case IDCLASS =>
+	        parseIdentifier;
+	
+	      case _ =>
+	        expected(INT, STRING, BOOL, UNIT, IDCLASS);
+	    }
+	    
+	    // Is it a FuncType?
+	    // => returnType
+	    if(currentToken.info == ARROW) {
+	      eat(ARROW)
+          val returnType: TypeTree = parseType
+      
+          return new FuncType(List(firstType), Nil, returnType)
+	    } else {
+	      return firstType;
+	    }
     }
   }
 
@@ -262,7 +292,7 @@ trait Parser extends Lexer {
         eat(SEMICOLON)
         return new PrintLn(expr)
 
-      // | ident = expr
+      // ident = expr
       case IDCLASS =>
         val ident: Identifier = parseIdentifier
 
@@ -281,7 +311,7 @@ trait Parser extends Lexer {
           return new Assignment(ident, expr)
         }
 
-      // | if ( expr ) statmt (else statmt)?
+      // if ( expr ) statmt (else statmt)?
       case IF =>
         eat(IF);
         eat(OPAREN)
@@ -295,7 +325,7 @@ trait Parser extends Lexer {
           } else None
         return new If(expr, stat, elseStat)
 
-      // | while ( expr ) statmt
+      // while ( expr ) statmt
       case WHILE =>
         eat(WHILE);
         eat(OPAREN)
@@ -317,7 +347,7 @@ trait Parser extends Lexer {
   }
 
   /**
-   * Parse a || expression.
+   * Parse an "or" expression.
    *
    * leftExpr || rightExpr
    */
@@ -337,7 +367,7 @@ trait Parser extends Lexer {
   }
 
   /**
-   * Parse a && expression.
+   * Parse an "and" expression.
    *
    * leftExpr && rightExpr
    */
@@ -477,7 +507,7 @@ trait Parser extends Lexer {
    * leftExpr.methodId(parameters...)
    */
   def parseDotExpr: ExprTree = {
-    var expr = parseSimpleExpr;
+    var expr = parseFuncCallExpr;
 
     // leftExpr.
     if (currentToken.info == DOT) {
@@ -498,6 +528,26 @@ trait Parser extends Lexer {
       }
     }
 
+    return expr;
+  }
+  
+  /**
+   * Parse a call expression on a function expression.
+   * 
+   * leftExpr(arguments)
+   */
+  def parseFuncCallExpr: ExprTree = {
+    var expr = parseSimpleExpr;
+    
+    // leftExpr(
+    if (currentToken.info == OPAREN) {
+      while (currentToken.info == OPAREN) {
+          // leftExpr(parameterList...)
+    	  val paramList = parseParametersList
+          expr = new FuncCall(expr, paramList);
+      }
+    }
+    
     return expr;
   }
 
@@ -527,6 +577,11 @@ trait Parser extends Lexer {
     return list.reverse;
   }
 
+  /**
+   * Parse a function expression (inline declaration).
+   * 
+   * => { <variables> <statements> return <returnExpr>; }
+   */
   def parseFuncExpr(args: List[VarDecl]): FuncExpr = {
     eat(ARROW);
     eat(OBLOCK);
@@ -536,18 +591,24 @@ trait Parser extends Lexer {
 
     // Statements
     var statements: List[StatTree] = List();
-    while (currentToken.info != RETURN) {
+    while (currentToken.info != RETURN && currentToken.info != CBLOCK) {
       val stat = parseStatement;
       statements = stat :: statements;
     }
     statements = statements.reverse
 
-    eat(RETURN);
-    val returnExpr = parseExpression;
-    eat(SEMICOLON);
-    eat(CBLOCK);
-
-    new FuncExpr(args, variables, statements, returnExpr);
+    if(currentToken.info == RETURN) {
+	    eat(RETURN);
+	    val returnExpr = parseExpression;
+	    eat(SEMICOLON);
+	    eat(CBLOCK);
+	    
+	    new FuncExpr(args, variables, statements, Some(returnExpr));
+    } else {
+    	eat(CBLOCK);
+    	
+    	new FuncExpr(args, variables, statements, None); 
+    }
   }
 
   /**
@@ -558,12 +619,22 @@ trait Parser extends Lexer {
     val initial = currentToken;
 
     currentToken.tokenClass match {
-      // ( expr )
+      
+      // ( expr ) 
+      // () => { ... } 
+      // ( arg1 : type1... ) => { ... } 
       case OPAREN =>
         eat(OPAREN);
-        val expr = parseExpression;
-        // ( arg1 : argType1, ... ) => { statements; }
-        val returnExpr: ExprTree =
+        
+        // () => { ... }
+        if(currentToken.info == CPAREN) {
+          eat(CPAREN);
+          return parseFuncExpr(List())
+        } else {
+          // ( expr
+          val expr = parseExpression;
+
+          // ( expr : ... ) => { ... }
           if (currentToken.info == COLON && expr.isInstanceOf[Identifier]) {
             val ident = expr.asInstanceOf[Identifier]
             eat(COLON)
@@ -577,27 +648,18 @@ trait Parser extends Lexer {
               list = new VarDecl(ident, argType) :: list
             }
             eat(CPAREN);
-            parseFuncExpr(list)
+            return parseFuncExpr(list)
+          
+          // ( expr )
           } else {
             eat(CPAREN);
-            expr
+            return expr
           }
-        return returnExpr;
+        }
 
       // identifier
       case IDCLASS =>
-        val identifier = parseIdentifier;
-
-        if (currentToken.info == OPAREN) { // func( statements; )
-          val paramList = parseParametersList
-          return new FuncCall(identifier, paramList)
-//        } else if (currentToken.info == COLON) { // arg : Type => { statements; }
-//          eat(COLON)
-//          val argType = parseType
-//          return parseFuncExpr(List(new VarDecl(identifier, argType)))
-        } else {
-          return identifier
-        }
+        return parseIdentifier;
 
       // integer literal
       case INTEGERLITERALCLASS =>

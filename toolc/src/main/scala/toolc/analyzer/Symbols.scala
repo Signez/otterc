@@ -74,9 +74,9 @@ object Symbols {
 	  }
     }
   }
-  
 
-  case class MethodSymbol(val name: String, val classSymbol: ClassSymbol) extends Symbol with Typed {
+  case class MethodSymbol(val name: String, val classSymbol: ClassSymbol, 
+                          val context: Option[MethodSymbol] = None) extends Symbol with Typed {
     var params: HashMap[String, VariableSymbol] = new HashMap[String, VariableSymbol]
     var members: HashMap[String, VariableSymbol] = new HashMap[String, VariableSymbol]
     // should contain the same values as the params map, but in the right order.
@@ -88,7 +88,7 @@ object Symbols {
         case None => 
           members.get(n) match {
             case ms @ Some(_) => ms
-            case None => classSymbol.lookupVar(n)
+            case None => if(context.isDefined) context.get.lookupVar(n); else classSymbol.lookupVar(n)
           }
       }   
     }
