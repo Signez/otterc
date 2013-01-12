@@ -3,19 +3,45 @@
 \subsubsection{Funarg Problem}
 "Funarg Problem refers to the difficulty in implementing first-class functions (functions as first-class objects) in implementations with stack-based memory allocation." (Wikipedia "Funarg Problem", Jan 2013) To illustrate this, let us consider y from the previous example. As we already mentioned would y nomally be out of scope at the moment the func1 is invoked (line 30). But since it is used in a first-class function, it becomes a free variable (contrary to bound varaibles) and can still be accessed even if the context of the variable is closed. In order to make this possible we introduce closures, which binds the functional literals to their free variables. One way of implementing this is descriped by the Lambda Lifting. \newline
 
+\subsection{New Elements in the Syntax Tree}
+Before solving the Funarg problem, however, we first are going to illustrate how other elements of the compiler have been implemented. To start off with the new syntax, which had to be introduced. We give here an overview:
+
+\begin{lstlisting}
+sealed trait TypeTree extends Tree
+  //( type.. ) => returnType
+  case class FuncType(arguments: List[TypeTree],
+    context: List[TypeTree], 
+    returnType: TypeTree) extends TypeTree
+  ...
+
+sealed trait ExprTree extends Tree with Typed
+  // ( arguments.. ) => { varDecl; statemenets; }
+  case class FuncExpr(arguments: List[VarDecl],
+    variables: List[VarDecl], statements: List[StatTree],
+    returnExpr: Option[ExprTree])
+    extends ExprTree with Symbolic[MethodSymbol]
+  // func( arguments; )
+  case class FuncCall(function: ExprTree,
+    expressions: List[ExprTree]) extends ExprTree
+  ...
+\end{lstlisting}
+
+
+
 \subsection{Parser}
-Before solving the Funarg problem, however, we first are going to illustrate how other elements of the compiler have been implemented. To start off with the parser, there is one rather difficult case to mention, which includes to distinguish a functional literal from an expression starting with an opening bracket:
+As it comes to the parser, there is one rather difficult case to mention, which includes to distinguish a functional literal from an expression starting with an opening bracket:
 \begin{lstlisting}
 f = (a: Int, b: Int) => {…} // functional literal
 f = (a + b) * c; // expression starting with "("
 \end{lstlisting}
-It makes it specially difficult since the toolc parser is a LL(1) parser. This means that the parser reads only one token after the other and does not remember passed token. In the previous example, the parser would first read the characters "f=(". At this point he knows, that an expression has to follow. But if the expression is just an identifier ("a" in the example), he does not know yet to distinguish the two cases. Only when reading one more token, he can identify a functional literal by colon ":".
+It makes it specially difficult since the toolc parser is some kind of a LL(1) parser. This means that the parser reads only one token after the other and does not remember passed token. In the previous example, the parser would first read the characters "f=(". At this point he knows, that an expression has to follow. But if the expression is just an identifier ("a" in the example), he does not know yet to distinguish the two cases. Only when reading one more token, he can identify a functional literal by colon ":".
 \begin{lstlisting}
 if (currentToken.tokenClass == OPAREN) {
   val expr = parseExpression;
 
   // functional literal
-  if (currentToken.info == COLON && expr.isInstanceOf[Identifier]) { ... }
+  if (currentToken.info == COLON
+      && expr.isInstanceOf[Identifier]) { ... }
   // expression starting with "("
   else { ... }
 
@@ -23,24 +49,38 @@ if (currentToken.tokenClass == OPAREN) {
 \end{lstlisting}
 
 \subsection{Analyser}
+The question that has to be asked, when implementing functional literals, is what kind of symbol has to be created for them. One way is to convert them to MethodSymbols. This includes to give them a random name like "anonfunc", but also to add an additional constructor to the MethodSymbol, which indicates the parent context. This parent context points to function, where the functional literal is declared:
+\begin{lstlisting}
+methodSymbol = new MethodSymbol("anonfunc",
+         classSymbol, Some(parentContext));
+\end{lstlisting}
+The additional parameter is needed to correctly assign symbols all free variables. Let us for this case consider the following situation:
+\begin{lstlisting}
+def method1() {
+  var x: Int;
+  var func1: Unit => Unit;
+
+  func1 = Unit => {
+    var func2: Unit => Unit;
+
+    func2 = Unit => {
+      x=x+1
+    }
+  }
+}
+\end{lstlisting}
+x is clearly a free variable for func2 (as well as for func1), since it is declared outside of the scope of func2 (and func1). In order to attach the proper symbol to each appearance of the variable x, the analyser has to check not only if the variable has been declared in the current functional literal (which is func2) or the parent function (which is func1), but all functions in the tree structure of all parent context. In the previous example, we would also have to check if x is declared in the scope of method1. In case we would not find the declaration of x in method1 (contrary to the previous example), an error is generated, since method1 has no parent context and the declaration of x has not been found in the parent context tree structure.
+
+\subsection{Code Generator}
+\begin{enumerate}
+\item (All previous steps, typechecking)
+\item Tag variables and members that are used inside functions as "to be boxed"
+\item Create boxed classes for every needed boxing types
+\item Replace all tagged occurences by boxed objects : declarations, assignations, usages
+\item Create closure class from inline function declaration content
+\item Replace inline function declaration by an initialization of the newly declared closure class
+\item Replace function call by a call to the "apply" method on the closure class
+\end{enumerate}
 
 
-
-If you are using theoretical concepts, explain them first in this subsection.
-Even if they come from the course (eg. lattices), try to explain the essential
-points \emph{in your own words}. Cite any reference work you used like this
-\cite{lamport94}. This should convince us that you know the theory behind what
-you coded. 
-
-\subsection{Implementation Details}
-Describe all non-obvious tricks you used. Tell us what you thought was hard and
-why. If it took you time to figure out the solution to a problem, it probably
-means it wasn't easy and you should definitely describe the solution in details
-here. If you used what you think is a cool algorithm for some problem, tell us.
-Do not however spend time describing trivial things (we what a tree traversal
-is, for instance). 
-
-After reading this section, we should be convinced that you knew what you were
-doing when you wrote your extension, and that you put some extra consideration
-for the harder parts.
 
