@@ -186,7 +186,6 @@ trait Analyzer {
 
     gs
   }
-  
 
   /**
    * Go through the parse tree and connect leafs to the right symbols.
@@ -200,8 +199,7 @@ trait Analyzer {
     // Initializing context for closures methods "setInStat", "setInExpr", etc.
     var classSymbol : ClassSymbol = null;
     var methodSymbol : MethodSymbol = null;
-    
-    
+
     def createType(typeT: TypeTree): Type = {
       typeT match {
         case IntType() => TInt
@@ -209,13 +207,12 @@ trait Analyzer {
         case StringType() => TString
         case IntArrayType() => TIntArray
         case id @ Identifier(_) => TObject(id.getSymbol.asInstanceOf[ClassSymbol])
-        case FuncType(args, returnType) => TFunction((args).map(el => createType(el)), createType(returnType)) 
+        case FuncType(args, returnType) => TFunction((args).map(el => createType(el)), createType(returnType))
         case _ =>
-          sys.error("Unexpected Type discovered!")
+          sys.error("Unexpected Type discovered! (" + TreePrinter(true)(typeT) + ")")
           null
       }
     }
-    
     
     /**
      * Analyze a statement, finding elements that need symbol assignment. 

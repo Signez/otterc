@@ -20,6 +20,21 @@ trait Lifter {
     }
   }
 
+  def generateType(typeT: TypeTree): Type = {
+      typeT match {
+        case IntType() => TInt
+        case BoolType() => TBoolean
+        case StringType() => TString
+        case IntArrayType() => TIntArray
+        case id @ Identifier(_) => TObject(id.getSymbol.asInstanceOf[ClassSymbol])
+        case FuncType(args, returnType) => TFunction((args).map(el => generateType(el)), generateType(returnType)) 
+        case UnitType() => TUnit
+        case _ =>
+          sys.error("Unexpected Type discovered! (" + TreePrinter(true)(typeT) + ")")
+          null
+      }
+    }
+  
   def liftTree(prog: Program, gs: GlobalScope) {
     
     var boxingClasses = new HashMap[TypeTree, ClassDecl]
@@ -67,6 +82,7 @@ trait Lifter {
 	        for (param <- method.arguments) {
 	          val variableSymbol = new VariableSymbol(param.id.value);
 	          variableSymbol.parentSymbol = methodSymbol
+	          variableSymbol.setType(generateType(param.theType))
 	          
 	          param.setSymbol(variableSymbol);
 	          param.id.setSymbol(variableSymbol);
@@ -80,6 +96,7 @@ trait Lifter {
 	        for (member <- method.variables) {
 	          val memberSymbol = new VariableSymbol(member.id.value);
 	          memberSymbol.parentSymbol = methodSymbol
+	          memberSymbol.setType(generateType(member.theType))
 	
 	          member.setSymbol(memberSymbol);
 	          member.id.setSymbol(memberSymbol);
@@ -89,6 +106,8 @@ trait Lifter {
 	
 	        method.setSymbol(methodSymbol);
 	        method.id.setSymbol(methodSymbol);
+	        
+	        method.getSymbol.setType(generateType(method.returnType))
 	
 	        classSymbol.methods += method.id.value -> methodSymbol
 	      }
@@ -96,6 +115,7 @@ trait Lifter {
 	      for(variable <- clazz.variables) {
 	        val variableSymbol = new VariableSymbol(variable.id.value);
 	        variableSymbol.parentSymbol = classSymbol
+	        variableSymbol.setType(generateType(contentType))
 	        
 	        variable.setSymbol(variableSymbol);
 	        variable.id.setSymbol(variableSymbol);
@@ -136,7 +156,10 @@ trait Lifter {
     
     def replaceInVarDeclList(list: List[VarDecl]) : List[VarDecl] = {      
       list.map(vd => {
-        new VarDecl(vd.id, createBoxingClasses(vd.theType).id)
+        val nvd = new VarDecl(vd.id, createBoxingClasses(vd.theType).id)
+        nvd.setSymbol(vd.getSymbol)
+        nvd.getSymbol.setType(generateType(createBoxingClasses(vd.theType).id))
+        nvd
       })
     }
     
@@ -193,6 +216,7 @@ trait Lifter {
 	        for (param <- method.arguments) {
 	          val variableSymbol = new VariableSymbol(param.id.value);
 	          variableSymbol.parentSymbol = methodSymbol
+	          variableSymbol.setType(generateType(param.theType))
 	          
 	          param.setSymbol(variableSymbol);
 	          param.id.setSymbol(variableSymbol);
@@ -206,6 +230,7 @@ trait Lifter {
 	        for (member <- method.variables) {
 	          val memberSymbol = new VariableSymbol(member.id.value);
 	          memberSymbol.parentSymbol = methodSymbol
+	          memberSymbol.setType(generateType(member.theType))
 	
 	          member.setSymbol(memberSymbol);
 	          member.id.setSymbol(memberSymbol);
@@ -215,6 +240,8 @@ trait Lifter {
 	
 	        method.setSymbol(methodSymbol);
 	        method.id.setSymbol(methodSymbol);
+	        
+	        method.getSymbol.setType(generateType(method.returnType))
 	
 	        classSymbol.methods += method.id.value -> methodSymbol
 	      }
@@ -222,6 +249,7 @@ trait Lifter {
 	      for(variable <- clazz.variables) {
 	        val variableSymbol = new VariableSymbol(variable.id.value);
 	        variableSymbol.parentSymbol = classSymbol
+	        variableSymbol.setType(generateType(variable.theType))
 	        
 	        variable.setSymbol(variableSymbol);
 	        variable.id.setSymbol(variableSymbol);
@@ -277,6 +305,7 @@ trait Lifter {
         for(localVar <- method.variables) {
           if(localVar.getSymbol.needBoxing) {
             localVar.theType = createBoxingClasses(localVar.theType).id
+            localVar.getSymbol.setType(generateType(createBoxingClasses(localVar.theType).id))
           }
         }
         
