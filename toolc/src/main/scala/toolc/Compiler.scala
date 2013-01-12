@@ -4,6 +4,7 @@ import scala.io.Source
 import parser.Parser
 import analyzer.Analyzer
 import analyzer.TypeChecker
+import code.Lifter
 import code.CodeGenerator
 import java.io.File
 
@@ -12,7 +13,8 @@ class Compiler(val fileName: String)
   with Parser
   with Analyzer
   with TypeChecker
-  with CodeGenerator {
+  with CodeGenerator
+  with Lifter {
 
   import lexer.Tokens._
 
@@ -43,13 +45,15 @@ class Compiler(val fileName: String)
 
     // Name analysis
     val global: GlobalScope = analyzeSymbols(mainProg)
-    
-    print(TreePrinter(true)(mainProg))
-    
     terminateIfErrors
 
     // Type checking
     typeCheck(mainProg, global)
+    terminateIfErrors
+    
+    // Do lamda lifting, boxing, and create adequate closures
+    liftTree(mainProg, global)
+    print(TreePrinter(true)(mainProg))
     terminateIfErrors
 
     // create main class

@@ -151,7 +151,7 @@ trait Parser extends Lexer {
         eat(ARROW)
 	    val returnType: TypeTree = parseType
 	    
-	    return new FuncType(argTypeList, Nil, returnType)
+	    return new FuncType(argTypeList, returnType)
         
     } else {
         // Only one type
@@ -196,7 +196,7 @@ trait Parser extends Lexer {
 	      eat(ARROW)
           val returnType: TypeTree = parseType
       
-          return new FuncType(List(firstType), Nil, returnType)
+          return new FuncType(List(firstType), returnType)
 	    } else {
 	      return firstType;
 	    }
@@ -255,10 +255,14 @@ trait Parser extends Lexer {
       }
       statements = statements.reverse
 
-      eat(RETURN);
-      val returnExpr = parseExpression;
-      eat(SEMICOLON);
-      eat(CBLOCK);
+      var returnExpr : Option[ExprTree] = None
+      
+      if(currentToken.info == RETURN) {
+    	eat(RETURN);
+      	returnExpr = Some(parseExpression);
+      	eat(SEMICOLON);
+      	eat(CBLOCK);
+      }
 
       val method = new MethodDecl(methodId, arguments, returnType, variables, statements, returnExpr).setPos(initial);
 

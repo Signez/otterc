@@ -68,9 +68,11 @@ object TreePrinter {
               (for { variable: VarDecl <- variables } yield printTree(variable, level + 2)).mkString
             val strStatements: String =
               (for { stat: StatTree <- statements } yield printTree(stat, level + 2)).mkString
+            val strReturn: String = if(returnExpr.isDefined)
+              leftWhiteSpace + " " * 2 + "return " + printTree(returnExpr.get, 0) + ";" + NEWLINE; else "";
+            	
             return leftWhiteSpace + "def " + printIdValue(id) + "(" + strArguments + ") : " +
-              strType + " = { " + NEWLINE + strVariables + strStatements +
-              leftWhiteSpace + " " * 2 + "return " + printTree(returnExpr, 0) + ";" + NEWLINE +
+              strType + " = { " + NEWLINE + strVariables + strStatements + strReturn +
               leftWhiteSpace + "}" + NEWLINE
 
           //{ ( Statement )* }
@@ -194,7 +196,7 @@ object TreePrinter {
           case IntType() => "Int"
           case StringType() => "String"
           case UnitType() => "Unit"
-          case FuncType(args, _, returnType) =>
+          case FuncType(args, returnType) =>
             args.map(printTree(_, 0)).mkString("(", ", ", ")") + " => " + printTree(returnType, 0)
         }
       return code

@@ -23,13 +23,13 @@ object Trees {
 
   sealed trait Tree extends Positional
 
-  case class Program(main: MainObject, classes: List[ClassDecl]) extends Tree
+  case class Program(main: MainObject, var classes: List[ClassDecl]) extends Tree
   case class MainObject(id: Identifier, stat: StatTree) extends Tree with Symbolic[ClassSymbol]
   case class ClassDecl(id: Identifier, extendz: Option[Identifier], 
                               variables: List[VarDecl], methods: List[MethodDecl]) extends Tree with Symbolic[ClassSymbol]
-  case class VarDecl(id: Identifier, theType: TypeTree) extends Tree with Symbolic[VariableSymbol]
+  case class VarDecl(id: Identifier, var theType: TypeTree) extends Tree with Symbolic[VariableSymbol]
   case class MethodDecl(id: Identifier, arguments: List[VarDecl], returnType: TypeTree, 
-                        variables: List[VarDecl], statements: List[StatTree], returnExpr: ExprTree)
+                        variables: List[VarDecl], var statements: List[StatTree], var returnExpr: Option[ExprTree])
                         extends Tree with Symbolic[MethodSymbol]
   
 
@@ -39,8 +39,8 @@ object Trees {
   case class BoolType() extends TypeTree       // Bool
   case class StringType() extends TypeTree     // String
   case class IntArrayType() extends TypeTree   // Int[]
-  case class FuncType(arguments: List[TypeTree], context: List[TypeTree], 
-      returnType: TypeTree) extends TypeTree   //( type.. ) => returnType
+  case class FuncType(arguments: List[TypeTree],  
+                      returnType: TypeTree) extends TypeTree   // ( type.. ) => returnType
   case class UnitType() extends TypeTree       // Unit
 
   sealed trait StatTree extends Tree

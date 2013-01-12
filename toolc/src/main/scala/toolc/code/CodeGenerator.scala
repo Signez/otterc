@@ -448,13 +448,14 @@ trait CodeGenerator {
         evalStat(stat)
 	  }
       
-      evalExpr(method.returnExpr)
+      if(method.returnExpr.isDefined) evalExpr(method.returnExpr.get);
       method.getSymbol.getType match {
         case TInt => ch << IRETURN
         case TBoolean => ch << IRETURN
         case TIntArray => ch << ARETURN
         case TString => ch << ARETURN
         case TObject(_) => ch << ARETURN
+        case TUnit => ch << RETURN
         case _ => ch << POP << RETURN
       }
 	  ch.freeze
@@ -465,7 +466,7 @@ trait CodeGenerator {
     classFile.addDefaultConstructor
     classFile.setSourceFile("")
     val mainMethodHandler = classFile.addMainMethod
-    val mainMethodDecl = new MethodDecl(new Identifier("main"), List(), new IntType(), List(), List(mainObject.stat), new IntegerLiteral(0))
+    val mainMethodDecl = new MethodDecl(new Identifier("main"), Nil, new IntType(), Nil, List(mainObject.stat), Some(new IntegerLiteral(0)))
     mainMethodDecl.setSymbol(new MethodSymbol("main", mainObject.getSymbol));
     mainMethodDecl.getSymbol.setType(TUntyped);
     addOpCode(mainMethodDecl, mainMethodHandler, gs, mainObject.id.value)
