@@ -55,7 +55,7 @@ object TreePrinter {
               NEWLINE + strVariables + strMethods + "}" + NEWLINE
 
           //var Identifier : Type ;
-          case VarDecl(id, theType) =>
+          case v @ VarDecl(id, theType) =>
             return leftWhiteSpace + "var " + printIdValue(id) + ": " + printTree(theType, 0) + ";" + NEWLINE
 
           //def Identifier ( ( Identifier : Type ( , Identifier : Type )* )? ) : Type = { ...

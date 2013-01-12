@@ -8,6 +8,21 @@ trait TypeChecker {
   import Types._
   import parser.Trees._
 
+  // TODO: Remove duplicate code
+  def createType(typeT: TypeTree): Type = {
+      typeT match {
+        case IntType() => TInt
+        case BoolType() => TBoolean
+        case StringType() => TString
+        case IntArrayType() => TIntArray
+        case id @ Identifier(_) => TObject(id.getSymbol.asInstanceOf[ClassSymbol])
+        case FuncType(args, returnType) => TFunction((args).map(el => createType(el)), createType(returnType)) 
+        case _ =>
+          sys.error("Unexpected Type discovered!")
+          null
+      }
+    }
+  
   /** Typechecking does not produce a value, but has the side effect of
    * attaching types to trees and potentially outputting error messages. */
   def typeCheck(prog: Program, gs: GlobalScope): Unit = {
@@ -236,7 +251,7 @@ trait TypeChecker {
       }
     }
     
-    currentMethod = new MethodSymbol("main", prog.main.getSymbol);
+    currentMethod = new MethodSymbol("main", prog.main.getSymbol, None);
     tcStat(prog.main.stat)
   }
 }
