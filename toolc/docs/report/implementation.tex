@@ -54,7 +54,7 @@ if (currentToken.tokenClass == OPAREN) {
 \end{lstlisting}
 
 \subsection{Analyser}
-The question that has to be asked, when implementing functional literals, is what kind of symbol has to be created for them. One way is to convert them to MethodSymbols. This includes to give them a random name like "anonfunc", but also to add an additional constructor to the MethodSymbol, which indicates the parent context. This parent context points to function, where the functional literal is declared:
+The question that has to be asked, when implementing functional literals, is what kind of symbol has to be created for them. One way is to convert functional literals to MethodSymbols. This includes to give them a random name like "anonfunc", but also to add an additional constructor to the MethodSymbol, which indicates the parent context. This parent context points to function, where the functional literal is declared:
 \begin{lstlisting}
 methodSymbol = new MethodSymbol("anonfunc",
          classSymbol, Some(parentContext));
@@ -66,7 +66,7 @@ def method1() {
   var func1: Unit => Unit;
 
   func1 = Unit => {
-    var func2: Unit => Unit;
+    var func2: Unit => Unit;\neq
 
     func2 = Unit => {
       x=x+1
@@ -77,29 +77,52 @@ def method1() {
 x is clearly a free variable for func2 (as well as for func1), since it is declared outside of the scope of func2 (and func1). In order to attach the proper symbol to each appearance of the variable x, the analyser has to check not only if the variable has been declared in the current functional literal (which is func2) or the parent function (which is func1), but all functions in the tree structure of all parent context. In the previous example, we would also have to check if x is declared in the scope of method1. In case we would not find the declaration of x in method1 (contrary to the previous example), an error is generated, since method1 has no parent context and the declaration of x has not been found in the parent context tree structure.
 
 \subsection{Type Checker}
+
+A more difficult part in the type checker is when a function literal is invoked.
+
 \begin{lstlisting}
-case func @ FuncExpr(arguments, variables, statements, returnExpr) =>
-  val context = currentMethod
-  currentMethod = func.getSymbol
-          
-  statements.foreach(tcStat(_))
-          
-  currentMethod = context
-          
-  TFunction(arguments.map(varDecl => varDecl.getSymbol.getType), 
-      if(returnExpr.isDefined) tcExpr(returnExpr.get, TAny); else TUnit)
-        
 case FuncCall(function, expressions) =>
-  val funType = tcExpr(function, anyFunction).asInstanceOf[TFunction]
+  val funType = tcExpr(function, anyFunction)
+      .asInstanceOf[TFunction]
           
-  for((expected, localExpr) <- funType.inputTypes.zip(expressions)) {
+  for((expected, localExpr)
+      <- funType.inputTypes.zip(expressions)) {
     tcExpr(localExpr, expected);
   }
           
   funType.outputType
 \end{lstlisting}
 
+\begin{enumerate}
+\item First the expression before the brackets with the function's parameters is verified to be a function (line 2). If func is for example a functional literal, that is defined as Unit=>(Unit=>Int). That means it returns another functional literal. One can invoke the nested function by writing func()(). The resulting type Unit=>(Unit=>Int) is then saved into funType.
+\item The types of the variables given as parameters to the function are then verified to agree with the parameter types given from funType (line 5)
+\item Finally the actual return type is compared with the return type of funType (line 10)
+\end{enumerate}
+
+
+Another important aspect is function isSubTypeOf to identify, if a Type is subtype of another type:
+
+\begin{lstlisting}
+// regular type (inputTypes...) => outputType
+case class TFunction(inputTypes: List[Type],
+      outputType: Type) extends Type {
+  override def isSubTypeOf(tpe: Type): Boolean =
+    tpe match {
+      case TAny => true
+      case `anyFunction` => true
+      case TFunction(iTs, oT) => 
+        iTs.size == inputTypes.size && 
+        oT.isSubTypeOf(outputType) && 
+    	!(for((original, candidate) <- inputTypes.zip(iTs))
+          yield { candidate.isSubTypeOf(original) })
+            .contains(false)
+    		  	
+      case _ => false
+    }
+\end{lstlisting}
+
 \subsection{Code Generator}
+For the code generator, we roughly proceeded as follows:
 \begin{enumerate}
 \item (All previous steps, typechecking)
 \item Tag variables and members that are used inside functions as "to be boxed"
