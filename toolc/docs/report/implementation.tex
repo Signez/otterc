@@ -94,7 +94,7 @@ case FuncCall(function, expressions) =>
 \end{lstlisting}
 
 \begin{enumerate}
-\item First the expression before the brackets with the function's parameters is verified to be a function (line 2). If func is for example a functional literal, that is defined as Unit=>(Unit=>Int). That means it returns another functional literal. One can invoke the nested function by writing func()(). The resulting type Unit=>(Unit=>Int) is then saved into funType.
+\item First the expression before the brackets with the function's parameters is verified to be a function (line 2). If func is for example a functional literal, that is defined as Unit=\textgreater(Unit=\textgreater Int). That means it returns another functional literal. One can invoke the nested function by writing func()(). The resulting type Unit=\textgreater(Unit=\textgreater Int) is then saved into funType.
 \item The types of the variables given as parameters to the function are then verified to agree with the parameter types given from funType (line 5)
 \item Finally the actual return type is compared with the return type of funType (line 10)
 \end{enumerate}

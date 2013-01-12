@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Debian) (format=pdflatex 2012.11.17)  12 JAN 2013 22:46
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Debian) (format=pdflatex 2012.11.17)  12 JAN 2013 23:05
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -224,166 +224,21 @@ Missing character: There is no â in font cmss10!
 Missing character: There is no € in font cmss10!
 Missing character: There is no ¦ in font cmss10!
  [2]
-! Missing $ inserted.
-<inserted text> 
-                $
-<to be read again> 
-                   \gg 
-l.97 ...iting func()(). The resulting type Unit\gg
-                                                  =>(Unit=>Int) is then save...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
+LaTeX Font Info:    Try loading font information for OML+ptm on input line 97.
 
-
-! LaTeX Error: Command \item invalid in math mode.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-\GenericError  ...                                
-                                                  \endgroup 
-\@inmatherr ...tect #1 invalid in math mode}\@ehc 
-                                                  \fi 
-\item ->\@inmatherr \item 
-                          \@ifnextchar [\@item {\@noitemargtrue \@item [\@it...
-l.98 \item
-           The types of the variables given as parameters to the function ar...
-
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-
-! LaTeX Error: Something's wrong--perhaps a missing \item.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-\GenericError  ...                                
-                                                  \endgroup 
-\addpenalty ...kipb \fi \fi \fi \else \@noitemerr 
-                                                  \fi 
-\@item ...ip }\fi \else \addpenalty \@itempenalty 
-                                                  \addvspace \itemsep \fi \g...
-<to be read again> 
-                   T
-l.98 \item T
-            he types of the variables given as parameters to the function ar...
-
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-
-! LaTeX Error: Something's wrong--perhaps a missing \item.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-\GenericError  ...                                
-                                                  \endgroup 
-\addvspace ...xaddvskip \fi \fi \else \@noitemerr 
-                                                  \fi 
-\@item ...nalty \@itempenalty \addvspace \itemsep 
-                                                  \fi \global \@inlabeltrue ...
-<to be read again> 
-                   T
-l.98 \item T
-            he types of the variables given as parameters to the function ar...
-
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-
-! LaTeX Error: Command \item invalid in math mode.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-\GenericError  ...                                
-                                                  \endgroup 
-\@inmatherr ...tect #1 invalid in math mode}\@ehc 
-                                                  \fi 
-\item ->\@inmatherr \item 
-                          \@ifnextchar [\@item {\@noitemargtrue \@item [\@it...
-l.99 \item
-           Finally the actual return type is compared with the return type o...
-
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-<to be read again> 
-                   \@@par 
-\par ...@m \@noitemerr {\@@par }\fi \else {\@@par 
-                                                  }\fi 
-\@item ...oparitem \else \if@inlabel \indent \par 
-                                                  \fi \ifhmode \unskip \unsk...
-<to be read again> 
-                   F
-l.99 \item F
-            inally the actual return type is compared with the return type o...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing } inserted.
-<inserted text> 
-                }
-<to be read again> 
-                   $
-<to be read again> 
-                   \@@par 
-\par ...@m \@noitemerr {\@@par }\fi \else {\@@par 
-                                                  }\fi 
-\@item ...oparitem \else \if@inlabel \indent \par 
-                                                  \fi \ifhmode \unskip \unsk...
-<to be read again> 
-                   F
-l.99 \item F
-            inally the actual return type is compared with the return type o...
-I've inserted something that you may have forgotten.
-(See the <inserted text> above.)
-With luck, this will get me unwedged. But if you
-really didn't forget anything, try typing `2' now; then
-my insertion and my current dilemma will both disappear.
-
-
-Overfull \hbox (678.49045pt too wide) in paragraph at lines 97--99
-\OT1/ptm/m/n/10.95 type Unit$\OMS/cmsy/m/n/10.95 ^^]\OT1/cmr/m/n/10.95 =\OML/cm
-m/m/it/10.95 > \OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 Unit \OT1/cmr/m/n/10.95 
-=\OML/cmm/m/it/10.95 > Int\OT1/cmr/m/n/10.95 )\OML/cmm/m/it/10.95 isthensavedin
-tofunType:Thetypesofthevariablesgivenasparameterstothefunctionarethenverifiedto
-agreewiththeparametertypesgivenfromfunType\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.
-95 line\OT1/cmr/m/n/10.95 5)[][]$ 
- []
-
-! Extra }, or forgotten \endgroup.
-\par ...m \@noitemerr {\@@par }\fi \else {\@@par }
-                                                  \fi 
-\@item ...oparitem \else \if@inlabel \indent \par 
-                                                  \fi \ifhmode \unskip \unsk...
-<to be read again> 
-                   F
-l.99 \item F
-            inally the actual return type is compared with the return type o...
-I've deleted a group-closing symbol because it seems to be
-spurious, as in `$x}$'. But perhaps the } is legitimate and
-you forgot something else, as in `\hbox{$x}'. In such cases
-the way to recover is to insert both the forgotten and the
-deleted material, e.g., by typing `I$}'.
-
+(/usr/share/texlive/texmf-dist/tex/latex/psnfss/omlptm.fd
+File: omlptm.fd 
+)
+LaTeX Font Info:    Font shape `OML/ptm/m/n' in size <10.95> not available
+(Font)              Font shape `OML/cmm/m/it' tried instead on input line 97.
 
 Overfull \hbox (10.81956pt too wide) in paragraph at lines 116--117
 [][][][][][][][][][][][][][][][][][][][][] 
  []
 
-) (./extensions.tex)
+) (./extensions.tex) [3]
 No file report.bbl.
-[3] [4
+[4
 
 ] (./report.aux)
 
@@ -391,26 +246,25 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) 
 Here is how much of TeX's memory you used:
- 2796 strings out of 495059
- 35954 string characters out of 3182029
+ 2794 strings out of 495059
+ 36040 string characters out of 3182029
  109816 words of memory out of 3000000
- 5977 multiletter control sequences out of 15000+200000
- 25952 words of font info for 54 fonts, out of 3000000 for 9000
+ 5979 multiletter control sequences out of 15000+200000
+ 23198 words of font info for 44 fonts, out of 3000000 for 9000
  14 hyphenation exceptions out of 8191
  31i,4n,40p,819b,1422s stack positions out of 5000i,500n,10000p,200000b,50000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texm
-f-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/
-fonts/type1/public/amsfonts/cm/cmss10.pfb></usr/share/texlive/texmf-dist/fonts/
-type1/public/amsfonts/cm/cmssbx10.pfb></usr/share/texlive/texmf-dist/fonts/type
-1/public/amsfonts/cm/cmssi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
-lic/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times
-/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></u
-sr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on report.pdf (4 pages, 119045 bytes).
+f-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr/share/texlive/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></usr/share/texlive/texmf-dist/fon
+ts/type1/public/amsfonts/cm/cmssi10.pfb></usr/share/texlive/texmf-dist/fonts/ty
+pe1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/ur
+w/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.
+pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on report.pdf (4 pages, 104921 bytes).
 PDF statistics:
- 54 PDF objects out of 1000 (max. 8388607)
- 38 compressed objects within 1 object stream
+ 50 PDF objects out of 1000 (max. 8388607)
+ 35 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
