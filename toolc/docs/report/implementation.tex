@@ -3,7 +3,7 @@ This is a very important section, you explain to us how you made it work.
 \subsection{Theoretical Background}
 
 \subsubsection{Funarg Problem}
-"Funarg Problem refers to the difficulty in implementing first-class functions (functions as first-class objects) in implementations with stack-based memory allocation." (Wikipedia "Funarg Problem", Jan 2013) For this, let us consider y from the example of the previous chapter. As we already mentioned that y would nomally be out of scope when invoking func1 at line 30. But since it is used in a first-class function, it becomes a free variable (contrary to bound varaibles) and can still be accessed even if the context of the variable is closed. In order to make this possible, one has to introduce closures, which binds the functional literals to their free variables. One way of implementing this is descriped by the Lambda Lifting. \newline
+"Funarg Problem refers to the difficulty in implementing first-class functions (functions as first-class objects) in implementations with stack-based memory allocation." (Wikipedia "Funarg Problem", Jan 2013) To illustrate this, let us consider y from the previous example. As we already mentioned would y nomally be out of scope at the moment the func1 is invoked (line 30). But since it is used in a first-class function, it becomes a free variable (contrary to bound varaibles) and can still be accessed even if the context of the variable is closed. In order to make this possible we introduce closures, which binds the functional literals to their free variables. One way of implementing this is descriped by the Lambda Lifting. \newline
 
 
 If you are using theoretical concepts, explain them first in this subsection.
