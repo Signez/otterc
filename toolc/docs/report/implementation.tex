@@ -1,7 +1,7 @@
 \subsection{Theoretical Background}
 
 \subsubsection{Funarg Problem}
-"Funarg Problem refers to the difficulty in implementing first-class functions (functions as first-class objects) in implementations with stack-based memory allocation." (Wikipedia "Funarg Problem", Jan 2013) To illustrate this, let us consider y from the previous example. As we already mentioned would y nomally be out of scope at the moment the func1 is invoked (line 30). But since it is used in a first-class function, it becomes a free variable (contrary to bound varaibles) and can still be accessed even if the context of the variable is closed. In order to make this possible we introduce closures, which binds the functional literals to their free variables. One way of implementing this is descriped by the Lambda Lifting. \newline
+"Funarg Problem refers to the difficulty in implementing first-class functions (functions as first-class objects) in implementations with stack-based memory allocation." (Wikipedia "Funarg Problem", Jan 2013) To illustrate this, let us consider y from the previous example. As we mentioned already, would y nomally be out of scope at the moment the func1 is invoked (line 30). But since it is used in a first-class function, it becomes a free variable (contrary to bound varaibles) and can still be accessed even if the context of the variable is closed. In order to make this possible we introduce \emph{closures}, which binds the functional literals to their \emph{free variables}. One way of implementing this is descriped by the \emph{Lambda Lifting}. \newline
 
 \subsection{New Elements in the Syntax Tree}
 Before solving the Funarg problem, however, we first are going to illustrate how other elements of the compiler have been implemented. To start off with the new syntax, which had to be introduced. We give here an overview:
@@ -26,7 +26,12 @@ sealed trait ExprTree extends Tree with Typed
   ...
 \end{lstlisting}
 
-
+Corresponding examples for each snytax shall here briefly presented:
+\begin{enumerate}
+\item \emph{FuncType} is used when a variable or a function to take or return a functional literal (line 10+12+24+25 in the example)
+\item \emph{FuncExpr} is used when a functional literal is assigned to a variable or returned in a function (line 15 in the example)
+\item \emph{FuncCall} is used when the functional literal is invoked (line 30+31+32)
+\end{enumerate}
 
 \subsection{Parser}
 As it comes to the parser, there is one rather difficult case to mention, which includes to distinguish a functional literal from an expression starting with an opening bracket:
@@ -70,6 +75,29 @@ def method1() {
 }
 \end{lstlisting}
 x is clearly a free variable for func2 (as well as for func1), since it is declared outside of the scope of func2 (and func1). In order to attach the proper symbol to each appearance of the variable x, the analyser has to check not only if the variable has been declared in the current functional literal (which is func2) or the parent function (which is func1), but all functions in the tree structure of all parent context. In the previous example, we would also have to check if x is declared in the scope of method1. In case we would not find the declaration of x in method1 (contrary to the previous example), an error is generated, since method1 has no parent context and the declaration of x has not been found in the parent context tree structure.
+
+\subsection{Type Checker}
+\begin{lstlisting}
+case func @ FuncExpr(arguments, variables, statements, returnExpr) =>
+  val context = currentMethod
+  currentMethod = func.getSymbol
+          
+  statements.foreach(tcStat(_))
+          
+  currentMethod = context
+          
+  TFunction(arguments.map(varDecl => varDecl.getSymbol.getType), 
+      if(returnExpr.isDefined) tcExpr(returnExpr.get, TAny); else TUnit)
+        
+case FuncCall(function, expressions) =>
+  val funType = tcExpr(function, anyFunction).asInstanceOf[TFunction]
+          
+  for((expected, localExpr) <- funType.inputTypes.zip(expressions)) {
+    tcExpr(localExpr, expected);
+  }
+          
+  funType.outputType
+\end{lstlisting}
 
 \subsection{Code Generator}
 \begin{enumerate}
