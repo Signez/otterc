@@ -1,0 +1,39 @@
+object MethodOverloading
+{
+	def main() : Unit = {
+		if (true)
+		{
+			new SimpleClass().thisIs(3);
+			new SimpleClass().thisIs("hello");
+			new SimpleClass().thisIs(new Sparta());
+		}
+	}
+}
+
+class SimpleClass
+{
+    def thisIs(i : Int) : Int = {
+        println("This is an int : " + i);
+
+        return 0;
+    }
+
+    def thisIs(i : String): Int = {
+        println("This is a string : " + i);
+
+        return 0;
+    }
+
+    def thisIs(i : Sparta): Int = {
+        println("This is sparta : " + i.get());
+
+        return 0;
+    }
+}
+
+class Sparta
+{
+    def get() : Int = {
+        return 42;
+    }
+}

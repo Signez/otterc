@@ -1,0 +1,10 @@
+object ExpressionsAsStatements
+{
+	def main() : Unit = {
+		if (true)
+		{
+			3 + 5;
+			println("That's it.");
+		}
+	}
+}

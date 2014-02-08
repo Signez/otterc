@@ -1,0 +1,29 @@
+object OperatorOverloading
+{
+	def main() : Unit = {
+		if(true)
+		{
+			println((new Integer().set(42) + 2).get());
+		}
+	}
+}
+
+class Integer {
+    var value: Int;
+
+    def set(i: Int): Integer = {
+        value = i;
+
+        return this;
+    }
+
+    def get(): Int = {
+        return value;
+    }
+
+    def plus(i: Int): Integer = {
+        value = value + i;
+
+        return this;
+    }
+}

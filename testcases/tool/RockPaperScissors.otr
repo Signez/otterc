@@ -1,0 +1,894 @@
+// RockPaperScissors by La Spada Luca
+// with graphics view !!!
+
+
+object RockPaperScissors {
+    def main() : Unit = {
+        println(new Game().Start(3));
+    }
+}
+
+class Player {
+	var name : String;
+	var id : Int;
+	var winPlay : Int;
+	var item : Item;
+	
+	def init(nm : String, iden : Int) : Player = {
+		name = nm;
+		id = iden;
+		winPlay = 0;
+		
+		return this;
+	}
+	
+	def getId() : Int = {
+		return id;
+	}
+	
+	def getName() : String = {
+		return name;	
+	}
+	
+	//Add a +1 do winPlay
+	def winRound(): Int = {
+		winPlay = winPlay + 1;
+		return 0;
+	}
+	
+	def getWinPlay(): Int = {
+		return winPlay;
+	}
+	
+	def setItem(it : Item) : Int = {
+		item = it;
+		return 0;
+	}
+	
+	def getItem() : Item = {
+		return item;
+	}
+}
+
+class Game {
+	var player1 : Player;
+	var player2 : Player;
+
+	var item1 : Item;
+	var item2 : Item;
+	var item3 : Item;
+	var nbItems : Int;
+	
+	var useless : Int;
+	
+	var aux : Auxiliary;
+	
+	var winBeforeGame : Int;
+	
+	//numberWin, the number of time that one player must win a play before winning Game
+	def init(nbWinBeforeGam : Int) : Int = {
+
+		player1 = new Player().init("Player 1", 1);
+		
+		player2 = new Player().init("Player 2", 2);
+		
+		item1 = new RockItem();
+		useless = item1.init(1, 2, 3);
+		
+		item2 = new PaperItem();
+		useless = item2.init(2, 3, 1);
+		
+		item3 = new ScissorsItem();
+		useless = item3.init(3, 1, 2);
+	
+		nbItems = 3;
+	
+		aux = new Auxiliary().init();
+	
+		winBeforeGame = nbWinBeforeGam; 
+ 		
+		return 0;
+	}
+
+	def Start(nbWinBeforeGame : Int) : String = {
+		var winnerPlayer : Player;
+		var eventString : String;
+		
+		winnerPlayer = new Player().init("No player, it's a draw !", 0-1);
+		
+		useless = this.init(nbWinBeforeGame);
+	
+		
+		while((player1.getWinPlay() < winBeforeGame) && (player2.getWinPlay() < winBeforeGame))
+		{
+			useless = this.getItemToPlayer(player1, aux.getInt(0, nbItems));
+			useless = this.getItemToPlayer(player2, aux.getInt(0, nbItems));
+									
+			if(player2.getItem().getId() < player1.getItem().getId()) {
+				useless = player1.winRound();
+				winnerPlayer = player1;	
+			}
+			else if (player1.getItem().getId() < player2.getItem().getId())
+			{
+				useless = player2.winRound();
+				winnerPlayer = player2;
+			}
+
+			eventString = "Player " + winnerPlayer.getId() + " wins the play !";
+			
+			//I but this here, because the eventString (If a but this with the others (else part)
+			//I need to write 2 times the same line
+			if(player2.getItem().getId() == player1.getItem().getId())
+			{
+				eventString = "Toh ! There is a draw !";
+			}
+			
+			//Draw Battle
+			println("");
+			println("");
+			println("Player 1 : " + player1.getItem().getName() + " VS " + "Player 2 : " + player2.getItem().getName());
+			useless = this.drawVS(player1, player2);
+			println("");
+			println(eventString);
+		}
+		
+		println("");
+		println("");
+		println("");
+		
+		println("Player " + winnerPlayer.getId() + " wins the GAME with the score of " + player1.getWinPlay() + " - " + player2.getWinPlay() + " !!!");
+		return "Game Over";
+	}
+	
+	def drawVS(p1: Player, p2 : Player): Int = {
+		useless = p1.getItem().getItemArt().drawTwoArt(p2.getItem().getItemArt());
+
+		return 0;
+	}
+	
+	def getItemToPlayer(player : Player, random : Int) : Int = {		
+	
+	   if(random == 0) {
+			useless = player.setItem(item1);
+		}
+		else if(random == 1) {
+			useless = player.setItem(item2);
+		}
+		else if(random == 2) {
+			useless = player.setItem(item3);
+		}
+
+		
+		return 0;
+	}
+
+}
+
+
+
+//Rock = 1			weak=2		strong=3
+//Paper = 2			weak=3		strong=1
+//Scissors =  3		weak=1		strong=2
+//I use tab for weak and strong for futur implemention of http://www.geekasia.com/explication-jeu-pierre-papier-ciseaux-lezard-spock/
+
+//Abstract Class
+class Item {
+	var itemArt : ItemArt;
+	
+	var id : Int;
+	var weak : Int;
+	var strong : Int;
+	
+	var useless : Int;
+	
+	var name : String;
+	
+	def init(id : Int, weak : Int, strong : Int) : Int = {
+		return 0;
+	}
+	
+	def initWeakAndStrong(ident : Int, weakness : Int, str : Int) : Int = {
+		id = ident;
+		weak = weak;
+		strong = strong;
+		
+		return 0;
+	}
+
+	def getName() : String = {
+		return name;
+	}
+	
+	def getId() : Int = {
+		return id;
+	}
+	
+	def getItemArt() : ItemArt = {
+		return itemArt;
+	}
+}
+
+class RockItem extends Item {
+	
+	def init(ident : Int, weakness : Int, str : Int) : Int = {
+		itemArt = new RockArt();
+		useless = itemArt.init();
+		
+		useless = this.initWeakAndStrong(ident, weakness, str);
+		
+		name = "Rock";
+		
+		return 0;
+	}
+}
+
+class ScissorsItem extends Item {
+
+	def init(ident : Int, weakness : Int, str : Int) : Int = {
+		itemArt = new ScissorsArt();
+		useless = itemArt.init();
+		
+		useless = this.initWeakAndStrong(ident, weakness, str);
+		
+		name = "Scissors";
+		
+		return 0;
+	}
+}
+
+class PaperItem extends Item {
+
+	def init(ident : Int, weakness : Int, str : Int) : Int = {
+		itemArt = new PaperArt();
+		useless = itemArt.init();
+		
+		useless = this.initWeakAndStrong(ident, weakness, str);
+		
+		name = "Scissors";
+		
+		return 0;
+	}
+}
+
+
+//The tabArt represents the item that will be viewed
+// Return -> 0
+// " " -> 1
+// "_" -> 2
+// "-" -> 3
+// "'" -> 4
+// ")" -> 5
+// "(" -> 6
+// "." -> 7
+
+//Source of image : http://www.ascii-art.de/ascii/def/finger.txt
+
+//Don't instance this class
+//THE TABART LENGTH NEED TO BE THE SAME FOR ALL ITEMART
+class ItemArt {
+	
+	var tabArt : Int[];
+	
+	def init() : Int = {
+		return 0;
+	}
+	
+	//Draw himself en the left and the argument(in mirror) on the right
+	def drawTwoArt(artTwo : ItemArt) : Int = {
+		var i : Int;
+		var lineString1 : String;
+		var lineString2 : String;
+		
+		lineString1 = "";
+		lineString2 = "";
+		i = 0;
+		while(i < tabArt.length) {
+		
+			if(!(tabArt[i] == 0))
+			{
+				lineString1 = lineString1 + this.getStringFromTabArt(tabArt[i]);
+				lineString2 = this.getStringFromTabArtForRightHand(artTwo.getTabArt()[i]) + lineString2;
+			}
+			else
+			{
+				println(lineString1 + "      " + lineString2);
+				lineString1 = "";
+				lineString2 = "";
+			}
+		
+			i = i + 1;
+		}
+	
+		return 0;
+	}
+	
+	def getTabArt() : Int[] = {
+		return tabArt;
+	}
+	
+	//Usefull to see only one Art
+	def decryptTabArtAndPrint() : Int = {
+		var i : Int;
+		var lineString : String;
+		
+		lineString = "";
+		i = 0;
+		while(i < tabArt.length) {
+		
+			if(!(tabArt[i] == 0))
+			{
+				lineString = lineString + this.getStringFromTabArt(tabArt[i]);
+			}
+			else
+			{
+				println(lineString);
+				lineString = "";
+			}
+		
+			i = i + 1;
+		}
+	
+		return 0;
+	}
+	
+	def getStringFromTabArtForRightHand(id : Int) : String = {
+		var tempString : String;
+		tempString = this.getStringFromTabArt(id);
+		
+		if(tempString == "(") {
+			tempString = ")";
+		}
+		else if(tempString == ")") {
+			tempString = "(";
+		}
+		else if(tempString =="'") {
+			tempString = ")";
+		}
+		
+		return tempString;
+	}
+	
+	def getStringFromTabArt(id : Int) : String = {
+		var sTab : String;
+		
+		if(id == 1) {
+			sTab = " ";
+		} 
+		else if (id == 2) { 
+			sTab = "_";
+		} 
+		else if (id == 3) { 
+			sTab = "-";
+		} 
+		else if (id == 4) { 
+			sTab = "'";
+		} 
+		else if (id == 5) { 
+			sTab = ")";
+		} 
+		else if (id == 6) { 
+			sTab = "(";
+		} 
+		else if (id == 7) { 
+			sTab = ".";
+		}
+		else {
+			sTab = "";
+		}
+		
+		return sTab;
+	}
+}
+
+class RockArt extends ItemArt {
+	
+	def init() : Int = {
+		tabArt = new Int[138];
+		//RockArt Initialisation
+		{
+			//Line 1
+			tabArt[0] = 1;
+			tabArt[1] = 1;
+			tabArt[2] = 1;
+			tabArt[3] = 1;
+			tabArt[4] = 1;
+			tabArt[5] = 1;
+			tabArt[6] = 2;
+			tabArt[7] = 2;
+			tabArt[8] = 2;
+			tabArt[9] = 2;
+			tabArt[10] = 2;
+			tabArt[11] = 2;
+			tabArt[12] = 2;
+			tabArt[13] = 1;
+			tabArt[14] = 1;
+			tabArt[15] = 1;
+			tabArt[16] = 1;
+			tabArt[17] = 1;
+			tabArt[18] = 1;
+			tabArt[19] = 1;
+			tabArt[20] = 1;
+			tabArt[21] = 1;
+			tabArt[22] = 0;
+			
+			//Line 2
+			tabArt[23] = 1;
+			tabArt[24] = 1;
+			tabArt[25] = 3;
+			tabArt[26] = 3;
+			tabArt[27] = 3;
+			tabArt[28] = 4;
+			tabArt[29] = 1;
+			tabArt[30] = 1;
+			tabArt[31] = 1;
+			tabArt[32] = 2;
+			tabArt[33] = 2;
+			tabArt[34] = 2;
+			tabArt[35] = 2;
+			tabArt[36] = 5;
+			tabArt[37] = 1;
+			tabArt[38] = 1;
+			tabArt[39] = 1;
+			tabArt[40] = 1;
+			tabArt[41] = 1;
+			tabArt[42] = 1;
+			tabArt[43] = 1;
+			tabArt[44] = 1;
+			tabArt[45] = 0;
+			
+			//Line 3
+			tabArt[46] = 1;
+			tabArt[47] = 1;
+			tabArt[48] = 1;
+			tabArt[49] = 1;
+			tabArt[50] = 1;
+			tabArt[51] = 1;
+			tabArt[52] = 1;
+			tabArt[53] = 1;
+			tabArt[54] = 6;
+			tabArt[55] = 2;
+			tabArt[56] = 2;
+			tabArt[57] = 2;
+			tabArt[58] = 2;
+			tabArt[59] = 2;
+			tabArt[60] = 5;
+			tabArt[61] = 1;
+			tabArt[62] = 1;
+			tabArt[63] = 1;
+			tabArt[64] = 1;
+			tabArt[65] = 1;
+			tabArt[66] = 1;
+			tabArt[67] = 1;
+			tabArt[68] = 0;
+			
+			//Line 4
+			tabArt[69] = 1;
+			tabArt[70] = 1;
+			tabArt[71] = 1;
+			tabArt[72] = 1;
+			tabArt[73] = 1;
+			tabArt[74] = 1;
+			tabArt[75] = 1;
+			tabArt[76] = 1;
+			tabArt[77] = 6;
+			tabArt[78] = 2;
+			tabArt[79] = 2;
+			tabArt[80] = 2;
+			tabArt[81] = 2;
+			tabArt[82] = 2;
+			tabArt[83] = 5;
+			tabArt[84] = 1;
+			tabArt[85] = 1;
+			tabArt[86] = 1;
+			tabArt[87] = 1;
+			tabArt[88] = 1;
+			tabArt[89] = 1;
+			tabArt[90] = 1;
+			tabArt[91] = 0;
+			
+			//Line 5
+			tabArt[92] = 1;
+			tabArt[93] = 1;
+			tabArt[94] = 1;
+			tabArt[95] = 1;
+			tabArt[96] = 1;
+			tabArt[97] = 1;
+			tabArt[98] = 1;
+			tabArt[99] = 1;
+			tabArt[100] = 6;
+			tabArt[101] = 2;
+			tabArt[102] = 2;
+			tabArt[103] = 2;
+			tabArt[104] = 2;
+			tabArt[105] = 5;
+			tabArt[106] = 1;
+			tabArt[107] = 1;
+			tabArt[108] = 1;
+			tabArt[109] = 1;
+			tabArt[110] = 1;
+			tabArt[111] = 1;
+			tabArt[112] = 1;
+			tabArt[113] = 1;
+			tabArt[114] = 0;
+			
+			//Line 6
+			tabArt[115] = 1;
+			tabArt[116] = 1;
+			tabArt[117] = 3;
+			tabArt[118] = 3;
+			tabArt[119] = 3;
+			tabArt[120] = 7;
+			tabArt[121] = 2;
+			tabArt[122] = 2;
+			tabArt[123] = 6;
+			tabArt[124] = 2;
+			tabArt[125] = 2;
+			tabArt[126] = 2;
+			tabArt[127] = 5;
+			tabArt[128] = 1;
+			tabArt[129] = 1;
+			tabArt[130] = 1;
+			tabArt[131] = 1;
+			tabArt[132] = 1;
+			tabArt[133] = 1;
+			tabArt[134] = 1;
+			tabArt[135] = 1;
+			tabArt[136] = 1;
+			tabArt[137] = 0;
+		}
+			
+		return 0;
+	}
+}
+
+class ScissorsArt extends ItemArt {
+	def init() : Int = {
+		tabArt = new Int[138];
+		//ScissorsArt Initialisation
+		{
+			//Line 1
+			tabArt[0] = 1;
+			tabArt[1] = 1;
+			tabArt[2] = 1;
+			tabArt[3] = 1;
+			tabArt[4] = 1;
+			tabArt[5] = 1;
+			tabArt[6] = 2;
+			tabArt[7] = 2;
+			tabArt[8] = 2;
+			tabArt[9] = 2;
+			tabArt[10] = 2;
+			tabArt[11] = 2;
+			tabArt[12] = 2;
+			tabArt[13] = 1;
+			tabArt[14] = 1;
+			tabArt[15] = 1;
+			tabArt[16] = 1;
+			tabArt[17] = 1;
+			tabArt[18] = 1;
+			tabArt[19] = 1;
+			tabArt[20] = 1;
+			tabArt[21] = 1;
+			tabArt[22] = 0;
+			
+			//Line 2
+			tabArt[23] = 1;
+			tabArt[24] = 1;
+			tabArt[25] = 3;
+			tabArt[26] = 3;
+			tabArt[27] = 3;
+			tabArt[28] = 4;
+			tabArt[29] = 1;
+			tabArt[30] = 1;
+			tabArt[31] = 1;
+			tabArt[32] = 2;
+			tabArt[33] = 2;
+			tabArt[34] = 2;
+			tabArt[35] = 2;
+			tabArt[36] = 5;
+			tabArt[37] = 2;
+			tabArt[38] = 2;
+			tabArt[39] = 2;
+			tabArt[40] = 2;
+			tabArt[41] = 1;
+			tabArt[42] = 1;
+			tabArt[43] = 1;
+			tabArt[44] = 1;
+			tabArt[45] = 0;
+			
+			//Line 3
+			tabArt[46] = 1;
+			tabArt[47] = 1;
+			tabArt[48] = 1;
+			tabArt[49] = 1;
+			tabArt[50] = 1;
+			tabArt[51] = 1;
+			tabArt[52] = 1;
+			tabArt[53] = 1;
+			tabArt[54] = 1;
+			tabArt[55] = 1;
+			tabArt[56] = 1;
+			tabArt[57] = 1;
+			tabArt[58] = 2;
+			tabArt[59] = 2;
+			tabArt[60] = 2;
+			tabArt[61] = 2;
+			tabArt[62] = 2;
+			tabArt[63] = 2;
+			tabArt[64] = 5;
+			tabArt[65] = 1;
+			tabArt[66] = 1;
+			tabArt[67] = 1;
+			tabArt[68] = 0;
+			
+			//Line 4
+			tabArt[69] = 1;
+			tabArt[70] = 1;
+			tabArt[71] = 1;
+			tabArt[72] = 1;
+			tabArt[73] = 1;
+			tabArt[74] = 1;
+			tabArt[75] = 1;
+			tabArt[76] = 1;
+			tabArt[77] = 1;
+			tabArt[78] = 2;
+			tabArt[79] = 2;
+			tabArt[80] = 2;
+			tabArt[81] = 2;
+			tabArt[82] = 2;
+			tabArt[83] = 2;
+			tabArt[84] = 2;
+			tabArt[85] = 2;
+			tabArt[86] = 2;
+			tabArt[87] = 2;
+			tabArt[88] = 5;
+			tabArt[89] = 1;
+			tabArt[90] = 1;
+			tabArt[91] = 0;
+			
+			//Line 5
+			tabArt[92] = 1;
+			tabArt[93] = 1;
+			tabArt[94] = 1;
+			tabArt[95] = 1;
+			tabArt[96] = 1;
+			tabArt[97] = 1;
+			tabArt[98] = 1;
+			tabArt[99] = 1;
+			tabArt[100] = 6;
+			tabArt[101] = 2;
+			tabArt[102] = 2;
+			tabArt[103] = 2;
+			tabArt[104] = 2;
+			tabArt[105] = 5;
+			tabArt[106] = 1;
+			tabArt[107] = 1;
+			tabArt[108] = 1;
+			tabArt[109] = 1;
+			tabArt[110] = 1;
+			tabArt[111] = 1;
+			tabArt[112] = 1;
+			tabArt[113] = 1;
+			tabArt[114] = 0;
+			
+			//Line 6
+			tabArt[115] = 1;
+			tabArt[116] = 1;
+			tabArt[117] = 3;
+			tabArt[118] = 3;
+			tabArt[119] = 3;
+			tabArt[120] = 7;
+			tabArt[121] = 2;
+			tabArt[122] = 2;
+			tabArt[123] = 6;
+			tabArt[124] = 2;
+			tabArt[125] = 2;
+			tabArt[126] = 2;
+			tabArt[127] = 5;
+			tabArt[128] = 1;
+			tabArt[129] = 1;
+			tabArt[130] = 1;
+			tabArt[131] = 1;
+			tabArt[132] = 1;
+			tabArt[133] = 1;
+			tabArt[134] = 1;
+			tabArt[135] = 1;
+			tabArt[136] = 1;
+			tabArt[137] = 0;
+		}
+			
+		return 0;
+	}
+}
+
+class PaperArt extends ItemArt {
+	def init() : Int = {
+		tabArt = new Int[138];
+		//PaperArt Initialisation
+		{
+			//Line 1
+			tabArt[0] = 1;
+			tabArt[1] = 1;
+			tabArt[2] = 1;
+			tabArt[3] = 1;
+			tabArt[4] = 1;
+			tabArt[5] = 1;
+			tabArt[6] = 2;
+			tabArt[7] = 2;
+			tabArt[8] = 2;
+			tabArt[9] = 2;
+			tabArt[10] = 2;
+			tabArt[11] = 2;
+			tabArt[12] = 2;
+			tabArt[13] = 1;
+			tabArt[14] = 1;
+			tabArt[15] = 1;
+			tabArt[16] = 1;
+			tabArt[17] = 1;
+			tabArt[18] = 1;
+			tabArt[19] = 1;
+			tabArt[20] = 1;
+			tabArt[21] = 1;
+			tabArt[22] = 0;
+			
+			//Line 2
+			tabArt[23] = 1;
+			tabArt[24] = 1;
+			tabArt[25] = 3;
+			tabArt[26] = 3;
+			tabArt[27] = 3;
+			tabArt[28] = 4;
+			tabArt[29] = 1;
+			tabArt[30] = 1;
+			tabArt[31] = 1;
+			tabArt[32] = 2;
+			tabArt[33] = 2;
+			tabArt[34] = 2;
+			tabArt[35] = 2;
+			tabArt[36] = 5;
+			tabArt[37] = 2;
+			tabArt[38] = 2;
+			tabArt[39] = 2;
+			tabArt[40] = 2;
+			tabArt[41] = 1;
+			tabArt[42] = 1;
+			tabArt[43] = 1;
+			tabArt[44] = 1;
+			tabArt[45] = 0;
+			
+			//Line 3
+			tabArt[46] = 1;
+			tabArt[47] = 1;
+			tabArt[48] = 1;
+			tabArt[49] = 1;
+			tabArt[50] = 1;
+			tabArt[51] = 1;
+			tabArt[52] = 1;
+			tabArt[53] = 1;
+			tabArt[54] = 1;
+			tabArt[55] = 1;
+			tabArt[56] = 1;
+			tabArt[57] = 1;
+			tabArt[58] = 2;
+			tabArt[59] = 2;
+			tabArt[60] = 2;
+			tabArt[61] = 2;
+			tabArt[62] = 2;
+			tabArt[63] = 2;
+			tabArt[64] = 5;
+			tabArt[65] = 1;
+			tabArt[66] = 1;
+			tabArt[67] = 1;
+			tabArt[68] = 0;
+			
+			//Line 4
+			tabArt[69] = 1;
+			tabArt[70] = 1;
+			tabArt[71] = 1;
+			tabArt[72] = 1;
+			tabArt[73] = 1;
+			tabArt[74] = 1;
+			tabArt[75] = 1;
+			tabArt[76] = 1;
+			tabArt[77] = 1;
+			tabArt[78] = 1;
+			tabArt[79] = 1;
+			tabArt[80] = 1;
+			tabArt[81] = 2;
+			tabArt[82] = 2;
+			tabArt[83] = 2;
+			tabArt[84] = 2;
+			tabArt[85] = 2;
+			tabArt[86] = 2;
+			tabArt[87] = 2;
+			tabArt[88] = 5;
+			tabArt[89] = 1;
+			tabArt[90] = 1;
+			tabArt[91] = 0;
+			
+			//Line 5
+			tabArt[92] = 1;
+			tabArt[93] = 1;
+			tabArt[94] = 1;
+			tabArt[95] = 1;
+			tabArt[96] = 1;
+			tabArt[97] = 1;
+			tabArt[98] = 1;
+			tabArt[99] = 1;
+			tabArt[100] = 1;
+			tabArt[101] = 1;
+			tabArt[102] = 1;
+			tabArt[103] = 2;
+			tabArt[104] = 2;
+			tabArt[105] = 2;
+			tabArt[106] = 2;
+			tabArt[107] = 2;
+			tabArt[108] = 2;
+			tabArt[109] = 2;
+			tabArt[110] = 5;
+			tabArt[111] = 1;
+			tabArt[112] = 1;
+			tabArt[113] = 1;
+			tabArt[114] = 0;
+			
+			//Line 6
+			tabArt[115] = 1;
+			tabArt[116] = 1;
+			tabArt[117] = 3;
+			tabArt[118] = 3;
+			tabArt[119] = 3;
+			tabArt[120] = 7;
+			tabArt[121] = 2;
+			tabArt[122] = 2;
+			tabArt[123] = 2;
+			tabArt[124] = 2;
+			tabArt[125] = 2;
+			tabArt[126] = 2;
+			tabArt[127] = 2;
+			tabArt[128] = 2;
+			tabArt[129] = 2;
+			tabArt[130] = 2;
+			tabArt[131] = 5;
+			tabArt[132] = 1;
+			tabArt[133] = 1;
+			tabArt[134] = 1;
+			tabArt[135] = 1;
+			tabArt[136] = 1;
+			tabArt[137] = 0;
+		}
+			
+		return 0;
+	}
+
+}
+
+
+//Auxiliary class used for mod et generate an aleatory number
+class Auxiliary {
+  var a : Int;
+  var b : Int;
+
+  def init() : Auxiliary = {
+    a = 22345; // put whatever you like in here
+    b = 54323; 
+    return this;
+  }
+
+  def getInt(min : Int, max : Int) : Int = {
+    var posInt : Int;
+
+    posInt = this.nextInt();
+    if(posInt < 0)
+      posInt = 0 - posInt;
+
+    return min + (this.mod(posInt, max - min));
+  }
+
+  def mod(i : Int, j : Int) : Int = { return i - (i / j * j); }
+
+  def nextInt() : Int = {
+    b = 36969 * ((b * 65536) / 65536) + (b / 65536);
+    a = 18000 * ((a * 65536) / 65536) + (a / 65536);
+    return (b * 65536) + a;
+  }
+}

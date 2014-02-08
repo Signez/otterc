@@ -2,6 +2,13 @@
 */.history
 */target
 */project
-toolc/testcases/*.class
-toolc/testcases/*/*.class
-toolc/*.class
+testcases/*.class
+testcases/*/*.class
+*.class
+build
+gradle
+.gradle
+.idea
+run.sh
+*.iml
+doc

@@ -1,0 +1,78 @@
+object Equation {
+	def main() : Unit = {
+		if(new SolveEq().calc()) { println("Equation solved !"); } else { println("error"); }
+	}
+}
+
+class SolveEq {
+	var seed : Int;
+	var a : Int;
+	var b : Int;
+	var c : Int;
+	var d : Int;
+	
+	var i : Int;
+	var check : Bool;
+	
+	var minusB : Int;
+	var delta : Int;
+	var det1 : Int;
+	var det2 : Int;
+	
+	def calc() : Bool = {
+		println("Solving a random quadratic equation : ax^2 + bx + c = d");
+		println("With random generated integers for a, b, c and d");
+		seed = 5323;	// starting seed for "random" generator
+		i = 0;
+		while(i < 1000) { a = this.randomGen(); i = i + 1; }
+		i = 0;
+		while(i < 100) { b = this.randomGen(); i = i + 1; }
+		i = 0;
+		while(i < 1000) { c = this.randomGen(); i = i + 1; }
+		i = 0;
+		while(i < 1000) { d = this.randomGen(); i = i + 1; }
+		println("");
+		println("Equation to solve : " + a + "x^2 + " + b + "x + " + c + " = " + d);
+		println("");
+		check = this.determinant();
+		return check;
+	}
+	
+	// The more it is called, the more random the value will be
+	def randomGen() : Int = { seed = (8253729 * seed + 2396403); return (seed / 327678); }
+	
+	// Set the equation = 0
+	def correctD() : Int = { i = c - d; d = 0; return i; }
+	
+	// Solve delta
+	def delta() : Int = { return ((b * b) - (4 * a * c)); }
+	
+	def invertSign(check : Int) : Int = { return (0 - check); }
+	
+	// Solve determinant
+	def determinant() : Bool = {
+		c = this.correctD();
+		minusB = this.invertSign(b);
+		delta = this.delta();
+		if (0 < delta) {
+			det1 = (minusB + delta)/(2*a);
+			det2 = (minusB - delta)/(2*a);
+			check = this.print();
+		} else if (0 == delta) {
+			det1 = minusB/(2*a);
+			det2 = det1;
+			check = this.print();
+		} else {
+			println("Determinant is negative !");
+			println(">>> Solution is in C !");
+			println("");
+		}
+		return check;
+	}
+	
+	def print() : Bool = {
+		println(">>> Solution : ");
+		println(">>> (x + " + det1 + ")*(x + " + det2 + ") = 0");
+		return true;
+	}
+}
